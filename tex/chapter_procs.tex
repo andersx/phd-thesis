@@ -1,0 +1,143 @@
+\chapter{Chemical shifts in a probabilistic framework}
+
+This section introduces the formalism for Monte Carlo simulations (or optimizations) which includes both physical energy terms as well as a probabilistic energy terms based on experimentally observed chemical shifts. These equations presented are not new, but have not been published in the form in which they are presented here. The intention is to present the equations in the form in which they are implemented in Phaistos in,  so that they can easily be re-implemented in other programs by others.
+
+A simplistic approach to this problem is to is to define a hybrid energy by defining a penalty function that describes the agreement between experimental data and data calculated from a proposed protein structure with a physical energy (such as from a molecular mechanics force field). A structure is then determined by minimizing
+
+\begin{equation}
+E_{\mathrm{hybrid}}= w_{\mathrm{data}}\ E_{\mathrm{data}}+E_{\mathrm{physical}}.
+\end{equation}
+\\
+This approach, however, does not uniquely define neither shape nor weight of $E_{\mathrm{data}}$. Chemical shifts have been combined with physical energies in a multitude of ways, e.g., weighted RMSD values or harmonic constraints. Vendruscolo and co-workers implemented a "square-well soft harmonic potential", and corresponding gradients and were able to run a biased MD simulation. In all cases the parameters and weights of $E_{\mathrm{data}}$ had to be carefully tweaked by hand, and it is not clear how to choose optimal parameters.
+\\
+
+The inferential structure determination (ISD) principles introduced by Rie-ping, Habeck and Nigles defines a Bayesian formulation of Eq XX. In the following section the equations of an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy. First remember Bayes' theorem which relates a conditional probability ($A$ given $B$) with its inverse:
+\begin{equation}
+p\left(A | B \right) =\frac{p\left(B | A \right)p\left(A\right)}{p\left(B \right)} 
+\end{equation}
+\\
+Now consider a set of chemical shifts $\{\delta_i\}$, and the uncertainty to which these can be predicted $\{\sigma_i\}$ from a structure, $\mathbfit X$ (the experimental uncertainty is negligibly small compared to this). We have to make the basic assumption, that the error, given as $\Delta\delta_i = \left| \delta_i^{\mathrm{predicted}} - \delta_i^{\mathrm{experimental}}\right|$, approximately follows a Gaussian distribution with some standard deviation, but we need not hand-pick and assign any numeric value to the standard deviation.Furthermore, the Gaussian distribution is the least biasing distribution according to the principle of maximum entropy.
+
+
+In this case, the most likely structure, $\mathbfit X$, and optimal choice of $\{\sigma_i\}$ is found by maximizing (via Bayes' theorem)
+\begin{equation}
+p\Big(\mathbfit X, \{\sigma_i\} \Big| \{\delta_i\} \Big) = \frac{p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big)p\Big(\mathbfit X, \{\sigma_i\} \Big)}{p\Big( \{\delta_i\}\Big)}.
+\end{equation}\\
+Here, \textit{marginal distribution} of $p\left( \{\delta_i\}\right)$ merely serves as a normalizing factor and the \textit{likelihood} of $p\left( \{\delta_i\} | \mathbfit X, \{\sigma_i\}\right)$, is obtained as the product of the individual, Gaussian probabilities over all $n$ single chemical shift measurements. Nuclei of the same atom-type, here denoted by index $j$, (e.g. C$^\alpha$, H$^\alpha$, etc.) are assumed to carry the same uncertainly denoted by $\sigma_j$:
+
+\begin{eqnarray}
+p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big) &\simeq& \prod_{i=0}^{n} p\left( \Delta\delta_i | \mathbfit X, \sigma_i \right)\\
+& = & \prod_{j=0}^{m} \prod_{i_j=0}^{n_j} p\left( \Delta\delta_{i_j} | \mathbfit X, \sigma_j \right)\\
+& = & \prod_{j=0}^{m} \prod_{i_j=0}^{n_j} \frac{1}{\sigma_j \sqrt{2\pi}} \exp{ \left( - \frac{\Delta\delta_{i_j}^2}{2\sigma_j^2} \right) }\\
+& = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left( \sum_{i_j=0}^{n_j} - \frac{\Delta\delta_{i_j}^2}{2\sigma_j^2} \right) }\\
+& = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  \frac{- \chi_j^2(\mathbfit X)}{2\sigma_j^2}\right) }
+\end{eqnarray}\\
+Furthermore, $p\left(\mathbfit X, \{\sigma_j\} \right)$ can be simplified as 
+
+\begin{eqnarray}
+p\Big(\mathbfit X, \{\sigma_j\} \Big) & \propto & p\Big(\{\sigma_j\} \Big| \mathbf X \Big) p\Big(\mathbf X\Big)\\
+& = & p\Big(\{\sigma_j\} \Big) p\Big(\mathbfit X\Big),
+\end{eqnarray}
+where it is assumed that the errors in the chemical shift prediction model are independent of the particular protein structure and \textit{vice versa}. The \textit{prior} distribution of $p\left(\{\sigma_j\} \right)$ is accounted for by proposing updates from a log-normal distribution (see next subsection). $p(\mathbfit X)$ of the molecular protein structure is here simply the Boltzmann distribution, i.e. 
+\begin{equation}
+p(\mathbfit X) = \frac{1}{Z}\exp{\left(-\frac{E(\mathbfit X)}{k_\mathrm{B}T}\right)}
+\end{equation}\\
+where $E(\mathbfit X)$ is the (physical) potential energy of the protein structure, most often described by a molecular mechanics force field. $k_\mathrm{B}$ is the Boltzmann constant and $T$ is the temperature of interest. Luckily we need not calculate the partition function, $Z$, because the relative energy landscape is invariant under choice of normalization constant. Note that $p(\mathbfit X)$ also can be introduced via conformational sampling from a biased distribution, such as for example TorusDBN or BASILISK (mimicking the Ramachandran plot and side chain rotamer distributions, respectively). 
+\\\\
+Neglecting normalization constants, the total probability to be maximized is thus proportional to:
+\begin{eqnarray}
+&&p\Big( \mathbfit X, \{\sigma_i\} \Big| \{\delta_i\} \Big)  \propto  p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big) p\Big(\mathbfit X\Big) p\Big(\{\sigma_i\} \Big) \\
+&&\propto   \prod_{j=0}^{m} \left(\frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  - \frac{1}{2\sigma_j^2} \chi_j^2 \right) } \exp{\left(-\frac{E(\mathbfit X)}{k_\mathrm{B}T}\right)} p\Big(\{\sigma_j\} \Big) 
+\end{eqnarray}
+
+When $p(\{\sigma_j\})$ is introduced via biased sampling, the associated hybrid-energy to be evaluated is (again neglecting constant terms) 
+\begin{eqnarray}
+E_{\mathrm{hybrid}}\left(\mathbfit{X}\right) &=&- k_\mathrm{B}T \ln{} \Big(p\Big( \mathbfit X, \{\sigma_i\} \Big| \{\delta_i\} \Big)\Big) \\
+&= & E(\mathbfit X) - k_\mathrm{B}T \sum_{j=0}^{n_j}n_j \ln{} \left(\frac{1}{\sigma_j \sqrt{2\pi}} \right) + \frac{\chi_j^2}{2\sigma_j^2}
+\end{eqnarray}
+
+
+\subsection{Sampling of $\{\sigma_j\}$}
+It is thus clear from Eq XX, that both $\{\sigma_j\}$ and $\mathbfit X$ (i.e. a set of 3D coordinates) are treated as variables. We are thus required to take MC steps in 3D space as well as $\sigma_j$ space. Computationally this is implemented using a set of standard MC moves to navigate in 3D space, and introducing a so-called \textit{none move} in which all 3D coordinates are kept, but a small change in variables space is proposed. In short all terms besides $p\left(\{\sigma_j\} \right)$ are calculated every Monte Carlo step in which the structure is physically altered and one element in $\{\sigma_j\}$ is conversely altered whenever a none move is performed.
+
+If the error in the prediction model is assumed to follow a Gaussian distribution, then the values of $\{\sigma_j\}$ must be assumed to follow a log-normal distribution (because $\sigma_j$ can only be a positive value). Since the shape parameters of these log-normal distributions have unknown shape parameter (here denoted by $\{\sigma_{\sigma_j}\}$), a step in $\sigma_{\sigma_j}$ space is also taken each none move.
+
+The Monte Carlo criterion in a standard Metropolis-Hastings scheme is thus
+
+\begin{align}
+\mathrm{acc}\Big(\mathbfit{X}_k, \{\sigma_i\}_k  \to \mathbfit{X}_{k+1}, \{\sigma_i\}_{k+1}\Big) = \min \Biggl\{1, \frac{p\Big(\mathbfit{X}_{k+1}, \{\sigma_i\}_{k+1}\Big)}{p\Big( \mathbfit{X}_k, \{\sigma_i\}_k\Big)} \Biggr\}
+\end{align}
+which is evaluated as
+\begin{eqnarray}
+\frac{p\Big(\mathbfit{X}_{k+1}, \{\sigma_i\}_{k+1}\Big)}{p\Big( \mathbfit{X}_k, \{\sigma_i\}_k\Big)} & = & \frac{p\Big(\mathbfit{X}_{k+1} \Big)}{p\Big( \mathbfit{X}_k\Big)} \frac{p\Big( \{\sigma_i\}_{k+1}\Big)}{p\Big( \{\sigma_i\}_k\Big)}\\
+ &=& \frac{\exp{\Big(- E_{\mathrm{hybrid}}\left(\mathbfit{X}_{k+1}\right)/k_\mathrm{B}}T\Big)}{\exp{\Big(- E_{\mathrm{hybrid}}\left(\mathbfit{X}_{k}\right)/k_\mathrm{B}}T\Big)}\frac{p\Big( \{\sigma_i\}_{k+1}\Big)}{p\Big( \{\sigma_i\}_k\Big)}
+\end{eqnarray}
+
+The ratio describing the changes, such as changes in $\{\sigma_i\}$ which are not evaluated as part of the hybrid energy function, is named \textit{sampling bias}. The bias we must compensate for, is introduced when the values of $\sigma_j$ are proposed according to a log-normal distribution with  $\sigma_{\sigma_j}$ 
+
+\begin{eqnarray}
+p(\sigma_j | \sigma_{\sigma_j}, \mu_j) &=& \frac{1}{\sigma_j\sqrt{2\pi \sigma_{\sigma_j}^2}} \exp{} \Biggl\{ \frac{(\ln{\sigma_j-\mu_j})^2}{2\sigma_{\sigma_j}^2} \Biggr\}
+\end{eqnarray}
+
+Here we set $\sigma_{\sigma_j} = \left( \frac{\chi^2}{\sigma^2}-n\right)^{-1}$ and $\mu_j = 0$. Consequently, sampling of $\sigma_j$ is itself biased due to the introduction of these qualified (although arbitrary) choices. We thus have to correct the (acceptance) probability XX by multiplying by the ratio of the proposal densities of the step and the reverse step:
+
+\begin{eqnarray}
+\frac{p\Big( \{\sigma_j\}_{k+1} \rightarrow \{\sigma_j\}_k\Big)}{p\Big( \{\sigma_j\}_k \rightarrow \{\sigma_j\}_{k+1} \Big)} & = & \frac{\prod_{j=0}^{m}p(\sigma_{j,k} | \sigma_{\sigma_{j,k}}, \mu_{j,k}) }{\prod_{j=0}^{m}p(\sigma_{j,k+1} | \sigma_{\sigma_{j,k+1}}, \mu_{j,k+1})}\\
+& = & \frac{p(\sigma_{a,k} | \sigma_{\sigma_{a,k}}, \mu_{a,k}) }{p(\sigma_{a,k+1} | \sigma_{\sigma_{a},k+1} \mu_{a,k+1})}\\
+&=& \frac{\sigma_{a,k}\sqrt{2\pi \sigma_{\sigma_{a},k}}}{\sigma_{a,k+1}\sqrt{2\pi \sigma_{\sigma_{a,k+1}}}} \exp{} \Biggl\{ \frac{(\ln{\sigma_j-\mu_j})^2}{2\sigma_{\sigma_j}} - \frac{(\ln{\sigma_j-\mu_j})^2}{2\sigma_{\sigma_j}} \Biggr\}
+\end{eqnarray}
+where $a$ is the index of the atom type in $\{j\}$ for which a change in $\sigma_j$ is proposed.
+
+
+
+
+
+
+The step consists of three parts. First an atom type is randomly selected. The corresponding value of $\sigma_{\sigma_j}$ is then set to $\frac{1}{\frac{\chi^2}{\sigma_j^2}+n_j}$
+
+
+
+Update\_sigma\_lognormal
+\begin{eqnarray}
+\mathrm{sigma\_sigma} & = &\Bigg(\frac{\mathrm{chi\_prev}^2}{\mathrm{sigma\_prev}^2}+n \Bigg)^{-1}\\
+\mathrm{delta\_log} & = & \mathrm{rnom}\left(0, \mathrm{sigma\_sigma}\right)\\
+\mathrm{sigma} & = & \exp{}\left( \mathrm{delta\_log} \right) * \mathrm{sigma\_prev}\\
+\mathrm{sigma\_sigma\_prev} & = & \mathrm{sigma\_sigma} \\
+\mathrm{sigma\_sigma} & = &\Bigg(\frac{\mathrm{chi\_prev}^2}{\mathrm{sigma}^2}+n \Bigg)^{-1}
+\end{eqnarray}
+
+Get\_log\_bias
+\begin{eqnarray}
+\mathrm{bias} & =&  \log{}\Bigg( \frac{\mathrm{sigma\_sigma\_prev}}{\mathrm{sigma\_sigma}}\Bigg)\\
+&& - 0.5 * \mathrm{delta\_log}^2*\Bigg( \frac{1}{\mathrm{sigma\_sigma}^2} - \frac{1}{\mathrm{sigma\_sigma\_prev^2}}\Bigg)
+\end{eqnarray}
+
+Get\_energy
+\begin{equation}
+\mathrm{energy} = \frac{\mathrm{chi}^2}{\mathrm{sigma\_prev}^2} + n*\log{}\mathrm{\_sigma\_prev}
+\end{equation}
+
+\begin{equation}
+\end{equation}
+
+\begin{equation}
+\end{equation}
+
+\begin{equation}
+\end{equation}
+
+\begin{equation}
+\end{equation}
+
+%\begin{algorithm}[H]
+%\begin{algorithmic}[1]
+%\IF{none move}
+%\STATE $j = \mathrm{rand}\left(0 ... m\right)$
+%\STATE $\sigma_{\sigma_j}^{\mathrm{(prop)}} \gets \frac{1}{\frac{\chi^2}{\sigma_j^2}+n_j}$ 
+%
+%\ENDIF
+%\end{algorithmic}
+%\caption{pseudocode for the calculation of lol}
+%\label{alg:seq}
+%\end{algorithm}
+
