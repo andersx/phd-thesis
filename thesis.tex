@@ -1,0 +1,51 @@
+\documentclass{report}
+\usepackage[top=3.5cm, bottom=4cm, left=3.1cm, right=3.1cm, headsep=14pt]{geometry}
+\usepackage{amsmath}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{pdfpages}
+\usepackage{tex/algorithm2e}
+\usepackage{tex/algorithmic}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+%fancyhead[LE,RO]{}
+%fancyhead[LO,RE]{\slshape \leftmark}
+\fancyhead[RE]{\rightmark}
+\fancyhead[LE,RO]{}
+%\fancyhead[LO,RE]{}
+%\bibliographystyle{plos2009}
+\bibliographystyle{apalike}
+
+\cfoot{\thepage}
+
+\DeclareMathAlphabet      {\mathbfit}{OML}{cmm}{b}{it}
+
+\def\s{\sigma}
+\newcommand{\slfrac}[2]{\left.#1\middle/#2\right.}
+
+% New definition of square root:
+% it renames \sqrt as \oldsqrt
+\let\oldsqrt\sqrt
+% it defines the new \sqrt in terms of the old one
+\def\sqrt{\mathpalette\DHLhksqrt}
+\def\DHLhksqrt#1#2{%
+    \setbox0=\hbox{$#1\oldsqrt{#2\,}$}\dimen0=\ht0
+    \advance\dimen0-0.2\ht0
+    \setbox2=\hbox{\vrule height\ht0 depth -\dimen0}%
+{\box0\lower0.4pt\box2}}
+
+
+
+\begin{document}
+\include{tex/acknowledgements}
+\include{tex/chapter_introduction}
+\include{tex/chapter_prior}
+\includepdf[pages={1-7}]{papers/ChristensenJCTC2011.pdf}
+\bibliography{tex/references}
+\end{document}

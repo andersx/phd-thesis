@@ -1,21 +1,24 @@
 \chapter{Chemical shifts in a probabilistic framework}
 
-This section introduces the formalism for Monte Carlo simulations (or optimizations) which includes both physical energy terms as well as a probabilistic energy terms based on experimentally observed chemical shifts. These equations presented are not new, but have not been published in the form in which they are presented here. The intention is to present the equations in the form in which they are implemented in Phaistos in,  so that they can easily be re-implemented in other programs by others.
+This section introduces the formalism for Monte Carlo simulations which includes both physical energy terms as well as a probabilistic energy terms based on experimentally observed chemical shifts.
+These equations presented are not new, but have not been published in the form in which they are presented here.
+The intention is to present the equations in the form in which they are implemented in PHAISTOS,  so that they can easily be re-implemented in other programs by others.
 
-A simplistic approach to this problem is to is to define a hybrid energy by defining a penalty function that describes the agreement between experimental data and data calculated from a proposed protein structure with a physical energy (such as from a molecular mechanics force field). A structure is then determined by minimizing
-
+\section{Defining an energy function from Bayes' theorem}
+A simplistic approach to this problem is to is to define a hybrid energy by defining a penalty function that describes the agreement between experimental data and data calculated from a proposed protein structure with a physical energy (such as from a molecular mechanics force field).
+A structure is then determined by minimizing
 \begin{equation}
 E_{\mathrm{hybrid}}= w_{\mathrm{data}}\ E_{\mathrm{data}}+E_{\mathrm{physical}}.
 \end{equation}
-\\
-This approach, however, does not uniquely define neither shape nor weight of $E_{\mathrm{data}}$. Chemical shifts have been combined with physical energies in a multitude of ways, e.g., weighted RMSD values or harmonic constraints. Vendruscolo and co-workers implemented a "square-well soft harmonic potential", and corresponding gradients and were able to run a biased MD simulation. In all cases the parameters and weights of $E_{\mathrm{data}}$ had to be carefully tweaked by hand, and it is not clear how to choose optimal parameters.
-\\
+This approach, however, does not uniquely define neither shape nor weight of $E_{\mathrm{data}}$.
+Chemical shifts have been combined with physical energies in a multitude of ways, e.g., weighted RMSD values or harmonic constraints.
+Vendruscolo and co-workers implemented a "square-well soft harmonic potential", and corresponding molecular gradients and were able to run a chemical shift-biased MD simulation.
+In all cases the parameters and weights of $E_{\mathrm{data}}$ had to be carefully tweaked by hand, and it is not clear how to choose optimal parameters.
 
-The inferential structure determination (ISD) principles introduced by Rie-ping, Habeck and Nigles defines a Bayesian formulation of Eq XX. In the following section the equations of an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy. First remember Bayes' theorem which relates a conditional probability ($A$ given $B$) with its inverse:
+The inferential structure determination (ISD) principles introduced by Rie-ping, Habeck and Nigles \cite{Rieping2005}defines a Bayesian formulation of Eq XX. In the following section the equations of an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy. First remember Bayes' theorem which relates a conditional probability ($A$ given $B$) with its inverse:
 \begin{equation}
 p\left(A | B \right) =\frac{p\left(B | A \right)p\left(A\right)}{p\left(B \right)} 
 \end{equation}
-\\
 Now consider a set of chemical shifts $\{\delta_i\}$, and the uncertainty to which these can be predicted $\{\sigma_i\}$ from a structure, $\mathbfit X$ (the experimental uncertainty is negligibly small compared to this). We have to make the basic assumption, that the error, given as $\Delta\delta_i = \left| \delta_i^{\mathrm{predicted}} - \delta_i^{\mathrm{experimental}}\right|$, approximately follows a Gaussian distribution with some standard deviation, but we need not hand-pick and assign any numeric value to the standard deviation.Furthermore, the Gaussian distribution is the least biasing distribution according to the principle of maximum entropy.
 
 
@@ -57,38 +60,75 @@ E_{\mathrm{hybrid}}\left(\mathbfit{X}\right) &=&- k_\mathrm{B}T \ln{} \Big(p\Big
 \end{eqnarray}
 
 
-\subsection{Sampling of $\{\sigma_j\}$}
-It is thus clear from Eq XX, that both $\{\sigma_j\}$ and $\mathbfit X$ (i.e. a set of 3D coordinates) are treated as variables. We are thus required to take MC steps in 3D space as well as $\sigma_j$ space. Computationally this is implemented using a set of standard MC moves to navigate in 3D space, and introducing a so-called \textit{none move} in which all 3D coordinates are kept, but a small change in variables space is proposed. In short all terms besides $p\left(\{\sigma_j\} \right)$ are calculated every Monte Carlo step in which the structure is physically altered and one element in $\{\sigma_j\}$ is conversely altered whenever a none move is performed.
+\subsection{Sampling of nuisance parameters}
+Since the nuisance parameters of the energy functions are unknown, they too must be sampled.
 
-If the error in the prediction model is assumed to follow a Gaussian distribution, then the values of $\{\sigma_j\}$ must be assumed to follow a log-normal distribution (because $\sigma_j$ can only be a positive value). Since the shape parameters of these log-normal distributions have unknown shape parameter (here denoted by $\{\sigma_{\sigma_j}\}$), a step in $\sigma_{\sigma_j}$ space is also taken each none move.
 
-The Monte Carlo criterion in a standard Metropolis-Hastings scheme is thus
 
-\begin{align}
-\mathrm{acc}\Big(\mathbfit{X}_k, \{\sigma_i\}_k  \to \mathbfit{X}_{k+1}, \{\sigma_i\}_{k+1}\Big) = \min \Biggl\{1, \frac{p\Big(\mathbfit{X}_{k+1}, \{\sigma_i\}_{k+1}\Big)}{p\Big( \mathbfit{X}_k, \{\sigma_i\}_k\Big)} \Biggr\}
-\end{align}
-which is evaluated as
+\subsubsection{Jeffreys' prior (general, one-parameter case)}
+The prior distribution of the nuisance parameter is inherently unknown.
+In such cases, it is necessary to use a prior distribution that will have only very little influence on the sampled value.
+One such \textit{uninformative prior} could for instance be a flat distribution over the positive real line.
+The concept of Jeffreys' priors are a generalization of flat priors. In the one parameter case the Jeffrey's prior is given as 
 \begin{eqnarray}
-\frac{p\Big(\mathbfit{X}_{k+1}, \{\sigma_i\}_{k+1}\Big)}{p\Big( \mathbfit{X}_k, \{\sigma_i\}_k\Big)} & = & \frac{p\Big(\mathbfit{X}_{k+1} \Big)}{p\Big( \mathbfit{X}_k\Big)} \frac{p\Big( \{\sigma_i\}_{k+1}\Big)}{p\Big( \{\sigma_i\}_k\Big)}\\
- &=& \frac{\exp{\Big(- E_{\mathrm{hybrid}}\left(\mathbfit{X}_{k+1}\right)/k_\mathrm{B}}T\Big)}{\exp{\Big(- E_{\mathrm{hybrid}}\left(\mathbfit{X}_{k}\right)/k_\mathrm{B}}T\Big)}\frac{p\Big( \{\sigma_i\}_{k+1}\Big)}{p\Big( \{\sigma_i\}_k\Big)}
+    p(\theta) \propto \sqrt{\mathbf{I}(\theta)},
+\end{eqnarray}
+where $\mathbf{I}(\theta)$ is the \textit{Fisher information} defined (in the one parameter case) as
+\begin{eqnarray}
+    \mathbf{I}(\theta) = \left\langle \left( \frac{\partial}{\partial\theta} \ln p(x|\theta) \right)^2 \right\rangle.
 \end{eqnarray}
 
-The ratio describing the changes, such as changes in $\{\sigma_i\}$ which are not evaluated as part of the hybrid energy function, is named \textit{sampling bias}. The bias we must compensate for, is introduced when the values of $\sigma_j$ are proposed according to a log-normal distribution with  $\sigma_{\sigma_j}$ 
 
+\subsubsection{Jeffreys' prior (Gaussian and Cauchy distributions)}
+Here we derive Jefferys' prior for the uncertainty of a Gaussian distribution, i.e.~a distribution on the form
 \begin{eqnarray}
-p(\sigma_j | \sigma_{\sigma_j}, \mu_j) &=& \frac{1}{\sigma_j\sqrt{2\pi \sigma_{\sigma_j}^2}} \exp{} \Biggl\{ \frac{(\ln{\sigma_j-\mu_j})^2}{2\sigma_{\sigma_j}^2} \Biggr\}
+    p(x|\mu, \sigma) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( \frac{-(x-\mu)}{2\sigma^2} \right).
+\end{eqnarray}
+This immediately gives us the Jeffreys' prior:
+\begin{eqnarray}
+    p(\sigma)
+    & \propto & \sqrt{\left\langle \left( \frac{\partial}{\partial\sigma}
+        \ln p(x|\mu, \sigma) \right)^2 \right\rangle}\nonumber\\
+    & = & \sqrt{\left\langle \left( \frac{\partial}{\partial\sigma}
+        \ln \left[\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( \frac{-(x-\mu)}{2\sigma^2} \right) \right]
+        \right)^2 \right\rangle}\nonumber\\
+%    & = & \sqrt{\left\langle \left( \frac{\partial}{\partial\sigma} \frac{-(x-\mu)}{2\sigma^2} \right)^2 \right\rangle}\\
+    & = & \sqrt{\left\langle \left(\frac{(x-\mu) - \sigma^2}{\sigma^3} \right)^2 \right\rangle}\nonumber\\
+    & = & \sqrt{\int^{\infty}_{-\infty}  p(x|\mu, \sigma) \left(\frac{(x-\mu) - \sigma^2}{\sigma^3} \right)^2 dx}\nonumber\\
+    & = &\sqrt{ \frac{2}{\sigma^2}} \ \propto \ \frac{1}{\sigma}
+\end{eqnarray}
+\\\\Similarly for the $\gamma$ parameter of the Cauchy distribution of the form
+\begin{eqnarray}
+    p(x|x_0, \gamma) = \frac{1}{\pi\gamma\left[ 1 + \left(\frac{x-x_0}{\gamma} \right)^2\right]},
+\end{eqnarray}
+we obtain the following Jeffreys' prior:
+\begin{eqnarray}
+p(\gamma)
+& \propto & \sqrt{\left\langle \left( \frac{\partial}{\partial\gamma}
+    \ln p(x|x_0, \gamma) \right)^2 \right\rangle}\nonumber\\
+& = & \sqrt{\left\langle \left( \frac{\partial}{\partial\gamma}
+\ln \left[\frac{1}{\pi\gamma\left[ 1 + \left(\frac{x-x_0}{\gamma} \right)^2\right]} \right] \right)^2 \right\rangle}\nonumber\\
+& = & \sqrt{\left\langle \left( -\frac{\gamma^2 - (x-x_0)^2}{\gamma^3 +\gamma(x-x_0)^2} \right)^2 \right\rangle }\nonumber\\
+& = & \sqrt{\int^{\infty}_{-\infty}  p(x|x_0, \gamma) \left(  -\frac{\gamma^2 - (x-x_0)^2}{\gamma^3 +\gamma(x-x_0)^2}\right)^2 dx }\nonumber\\
+& = & \sqrt{\frac{1}{2\gamma^2}} \ \propto \ \frac{1}{\gamma}
 \end{eqnarray}
 
-Here we set $\sigma_{\sigma_j} = \left( \frac{\chi^2}{\sigma^2}-n\right)^{-1}$ and $\mu_j = 0$. Consequently, sampling of $\sigma_j$ is itself biased due to the introduction of these qualified (although arbitrary) choices. We thus have to correct the (acceptance) probability XX by multiplying by the ratio of the proposal densities of the step and the reverse step:
-
-\begin{eqnarray}
-\frac{p\Big( \{\sigma_j\}_{k+1} \rightarrow \{\sigma_j\}_k\Big)}{p\Big( \{\sigma_j\}_k \rightarrow \{\sigma_j\}_{k+1} \Big)} & = & \frac{\prod_{j=0}^{m}p(\sigma_{j,k} | \sigma_{\sigma_{j,k}}, \mu_{j,k}) }{\prod_{j=0}^{m}p(\sigma_{j,k+1} | \sigma_{\sigma_{j,k+1}}, \mu_{j,k+1})}\\
-& = & \frac{p(\sigma_{a,k} | \sigma_{\sigma_{a,k}}, \mu_{a,k}) }{p(\sigma_{a,k+1} | \sigma_{\sigma_{a},k+1} \mu_{a,k+1})}\\
-&=& \frac{\sigma_{a,k}\sqrt{2\pi \sigma_{\sigma_{a},k}}}{\sigma_{a,k+1}\sqrt{2\pi \sigma_{\sigma_{a,k+1}}}} \exp{} \Biggl\{ \frac{(\ln{\sigma_j-\mu_j})^2}{2\sigma_{\sigma_j}} - \frac{(\ln{\sigma_j-\mu_j})^2}{2\sigma_{\sigma_j}} \Biggr\}
-\end{eqnarray}
-where $a$ is the index of the atom type in $\{j\}$ for which a change in $\sigma_j$ is proposed.
 
 
 
 
 
+
+
+\begin{figure}%
+    \centering
+    \subfloat[Gaussian distribution]{
+        {\includegraphics[width=0.45\textwidth]{figures/sigma_prior.pdf} }
+    }
+    \qquad
+    \subfloat[Cauchy distribution]{
+        {\includegraphics[width=0.45\textwidth]{figures/gamma_prior.pdf} }
+    }
+    \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
+    \label{fig:example}%
+\end{figure}
