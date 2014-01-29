@@ -1,4 +1,4 @@
-\documentclass{report}
+\documentclass[a4paper]{report}
 \usepackage[top=3.5cm, bottom=4cm, left=3.1cm, right=3.1cm, headsep=14pt]{geometry}
 \usepackage{amsmath}
 
@@ -8,21 +8,19 @@
 \usepackage{graphicx}
 \usepackage{subfig}
 \usepackage{pdfpages}
-\usepackage{tex/algorithm2e}
-\usepackage{tex/algorithmic}
+%\usepackage{tex/algorithm2e}
+%\usepackage{algorithmic}
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-%fancyhead[LE,RO]{}
-%fancyhead[LO,RE]{\slshape \leftmark}
-\fancyhead[RE]{\rightmark}
-\fancyhead[LE,RO]{}
-%\fancyhead[LO,RE]{}
+\fancyhead[R]{}
+\fancyhead[L]{\rightmark}
+%cfoot{\thepage}
+
 %\bibliographystyle{plos2009}
 \bibliographystyle{apalike}
 
-\cfoot{\thepage}
 
 \DeclareMathAlphabet      {\mathbfit}{OML}{cmm}{b}{it}
 
@@ -43,8 +41,18 @@
 
 
 \begin{document}
+\pagenumbering{roman}
+%\thispagestyle{empty}
+%\setcounter{page}{2}
+%\cleardoublepage
 \include{tex/acknowledgements}
-\include{tex/chapter_introduction}
+\thispagestyle{empty}
+\renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{\chaptername\ \thechapter.\ #1}}{}}
+\setcounter{page}{1}
+\pagenumbering{arabic}
+\cleardoublepage
+\tableofcontents
+\cleardoublepage
 \include{tex/chapter_prior}
 % Ring-current
 \includepdf[pages={1-7}]{papers/ct2002607.pdf}

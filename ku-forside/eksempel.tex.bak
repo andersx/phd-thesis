@@ -1,0 +1,35 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, hmargin={3cm, 3cm}, vmargin={3cm, 3cm}]{geometry}      % Geometri-pakke: Styrer bl.a. maginer    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[teo]{ku-forside} % KU-forside                                %
+% Sprogmuligheder:     da, en                                           %
+% Fakultetsmuligheder: farma, hum, jur, ku, life, nat, samf, sund, teo  %
+% Farvemuligheder:     sh, farve                                        %
+% Default er [da,nat,farve]                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%               Titel                    %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\titel{Test} %
+%\undertitel{} %
+%\opgave{Overspringshandling} %
+%\forfatter{Krede}%
+%\dato{\today}%
+%\vejleder{Doktoren} %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                 Her begynder dokumentet                    %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle % LAVER TITLEN
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% TEKST BEGYNDER HER  %%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reserving on an aggregated level}
+$$
+R=\sum_{i=2}^{n}R_{i}=\sum_{i=2}^{n}D_{i(n+1-i)}\left(\prod_{j=n+1-i}^{n-1}\hat{f}_{j}-1\right)
+\label{(a0)}
+$$
+
+
+\end{document}

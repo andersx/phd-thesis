@@ -1,4 +1,5 @@
 \chapter{Chemical shifts in a probabilistic framework}
+% \addcontentsline{toc}{chapter}{Chemical shifts in a probabilistic framework}
 
 This section introduces the formalism for Monte Carlo simulations which includes both physical energy terms as well as a probabilistic energy terms based on experimentally observed chemical shifts.
 These equations presented are not new, but have not been published in the form in which they are presented here.
@@ -60,12 +61,8 @@ E_{\mathrm{hybrid}}\left(\mathbfit{X}\right) &=&- k_\mathrm{B}T \ln{} \Big(p\Big
 \end{eqnarray}
 
 
-\subsection{Sampling of nuisance parameters}
-Since the nuisance parameters of the energy functions are unknown, they too must be sampled.
 
-
-
-\subsubsection{Jeffreys' prior (general, one-parameter case)}
+\subsection{Jeffreys' prior (general, one-parameter case)}
 The prior distribution of the nuisance parameter is inherently unknown.
 In such cases, it is necessary to use a prior distribution that will have only very little influence on the sampled value.
 One such \textit{uninformative prior} could for instance be a flat distribution over the positive real line.
@@ -79,7 +76,7 @@ where $\mathbf{I}(\theta)$ is the \textit{Fisher information} defined (in the on
 \end{eqnarray}
 
 
-\subsubsection{Jeffreys' prior (Gaussian and Cauchy distributions)}
+\subsection{Jeffreys' prior (Gaussian and Cauchy distributions)}
 Here we derive Jefferys' prior for the uncertainty of a Gaussian distribution, i.e.~a distribution on the form
 \begin{eqnarray}
     p(x|\mu, \sigma) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( \frac{-(x-\mu)}{2\sigma^2} \right).
@@ -113,8 +110,15 @@ p(\gamma)
 & = & \sqrt{\frac{1}{2\gamma^2}} \ \propto \ \frac{1}{\gamma}
 \end{eqnarray}
 
-
-
+\subsection{Sampling of nuisance parameters}
+Since the nuisance parameters of the energy functions are unknown, they too must be sampled.
+The move used to update the value of the nuisance parameters must obey detailed balance:
+\begin{eqnarray}
+    p\left(\theta \rightarrow \theta'\right) = p\left(\theta' \rightarrow \theta\right)
+\end{eqnarray}
+The simplest Monte Carlo move is simply adding a number from a normal distribution with $\mu = 0$, this clearly obeys detailed balance, since the distribution is symmetric.
+For the scale parameter, $\gamma$ and $\sigma$, of the Cauchy and Gaussian distributions, respectively, we found a variance of $0.05$ in the normal distributed move to converge quickly and stably.
+Figure \ref{fig:example} show a histogram of sampled values of $\gamma$ and $\sigma$ for the NMR structure of Protein G (PDB-id: 2OED). 55 C-alpha 
 
 
 
