@@ -160,7 +160,7 @@ Since only a fraction of the possible $(\phi, \psi)$ backbone angles are allowed
 Using biased sampling, energy evaluation of structures that are obviously in sterically unfavored regions is eliminated with high efficiency.
 
 Taking the biased sampling one step further, it is possible to have the biased sampling via TorusDBN conditioned on a set of chemical shifts.
-This sampling is carried out via the TorusDBN-CS model by Boomsma \texit{et al.} TorusDBN-CS is trained on all chemical shift data available in the RefDB database, that is 1349 protein structures with their corresponding chemical shifts. This includes both experimental X-ray crystal and NMR structures.
+This sampling is carried out via the TorusDBN-CS model by Boomsma \textit{et al.} TorusDBN-CS is trained on all chemical shift data available in the RefDB database, that is 1349 protein structures with their corresponding chemical shifts. This includes both experimental X-ray crystal and NMR structures.
 
 In most cases TorusDBN-CS model is able to restrict the conformational sampling of $(\phi, \psi)$ angles to not only the Ramachandran plot, but also the correct region (e.g. alpha-helix, beta-sheet), etc.
 However, since the data set is smaller than that of the TorusDBN (non-CS) model TorusDBN-CS will occasionally be less restrictive than TorusDBN and may sample outside the Ramachandran plot.
