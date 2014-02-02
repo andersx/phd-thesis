@@ -10,4 +10,4 @@ all:
 	pdftk ku-forside/front.pdf ${THESIS}.pdf cat output ${THESIS}_main.pdf
 
 clean:
-	rm ${THESIS}.aux ${THESIS}.bbl ${THESIS}.blg ${THESIS}.out ${THESIS}.log tex/*.aux
+	rm ${THESIS}.aux ${THESIS}.bbl ${THESIS}.blg ${THESIS}.out ${THESIS}.log ${THESIS}.toc ${THESIS}.pdf tex/*.aux 

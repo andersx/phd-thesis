@@ -136,3 +136,43 @@ Figure \ref{fig:example} show a histogram of sampled values of $\gamma$ and $\si
     \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
     \label{fig:example}%
 \end{figure}
+
+\section{Prior distributions for protein structure}
+
+
+\subsection{Molecular mechanics force field}
+
+One reasonable prior distribution for protein structure, $p(\mathbf{X)}$, is the Boltzmann distributino, e.g.:
+
+\begin{equation}
+    %p(\mathbf{X}) = \frac{1}{Z}\exp\left( \frac{-E}{k_\mathrm{B}T}\right)
+    p(\mathbf{X}) \propto \exp\left( \frac{-E}{k_\mathrm{B}T}\right)
+\end{equation}
+%where $E$ is the energy of the structure, $\mathbf{X}$ and $Z$, $k_\mathrm{B}$ and $T$ are the partition function, Boltzmann's constant and temperature, respectively.
+where $E$ is the energy of the structure, $\mathbf{X}$ and $k_\mathrm{B}$ and $T$ are Boltzmann's constant and the temperature, respectively.
+The energy of the structure is in this context usually approximated by a molecular mechanics force field that is taylor-made for protein simulations. PHAISTOS currently supports two different protein force field: The OPLS-AA/L force field with a GB/SA solvent term, and the PROFASI force field.
+
+\subsection{Generative probabilistic models}
+
+Another way to introduce the prior distribution for a protein structure is to bias the conformational sampling. 
+Conventional conformational sampling will proposed $(\phi, \psi)$ backbone angles uniformly (i.e. in the range $[-180^{\circ}, 180^{\circ}]$ and let the energy function filter and construct the target distribution (e.g. the canonical ensemble, etc.) via energy evaluation.
+Since only a fraction of the possible $(\phi, \psi)$ backbone angles are allowed (i.e. the Ramachandran plot), it is computationally very convenient to only sample from the allowed regions.
+Using biased sampling, energy evaluation of structures that are obviously in sterically unfavored regions is eliminated with high efficiency.
+
+Taking the biased sampling one step further, it is possible to have the biased sampling via TorusDBN conditioned on a set of chemical shifts.
+This sampling is carried out via the TorusDBN-CS model by Boomsma \texit{et al.} TorusDBN-CS is trained on all chemical shift data available in the RefDB database, that is 1349 protein structures with their corresponding chemical shifts. This includes both experimental X-ray crystal and NMR structures.
+
+In most cases TorusDBN-CS model is able to restrict the conformational sampling of $(\phi, \psi)$ angles to not only the Ramachandran plot, but also the correct region (e.g. alpha-helix, beta-sheet), etc.
+However, since the data set is smaller than that of the TorusDBN (non-CS) model TorusDBN-CS will occasionally be less restrictive than TorusDBN and may sample outside the Ramachandran plot.
+
+
+
+\subsubsection{TorusDBN}
+
+
+\subsubsection{BASILISK}
+
+
+\subsection{Or both}
+
+
