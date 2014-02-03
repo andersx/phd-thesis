@@ -16,16 +16,15 @@ def load_pickle(filename):
 
 to_deg = 180.0 / numpy.pi
 
-native_data = load_pickle("temp1.cpickle")
-torus_cs_data = load_pickle("temp2.cpickle")
-torus_data = load_pickle("temp3.cpickle")
+native_data     = load_pickle("ubiquitin_native.cpickle")
+torus_cs_data   = load_pickle("ubiquitin_torus_cs_original.cpickle")
+torus_data      = load_pickle("ubiquitin_torus_original.cpickle")
 
 output_data = torus_data
 
 
 length = len(output_data)
 
-width = 12
 bin_no = 36
 
 deg_range = [-180.0, 180.0]
@@ -35,8 +34,9 @@ max_exponent = 4.0 # E.g. max is 10^4.0
 
 lvls = numpy.logspace(0.0, max_exponent, 20)
 
+width = 2
 pyplot.figure(figsize=(4 * width, length/width * 4))
-for i in range(length):
+for i in [10, 11, 20, 21, 30, 31, 40, 41, 50, 51]:
 
 
     pyplot.subplot(length/width+1, width, i + 1)
