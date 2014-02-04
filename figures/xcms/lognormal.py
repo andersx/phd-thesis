@@ -69,16 +69,16 @@ fig = pylab.figure(figsize=[size, size * ratio])
 ax = fig.add_subplot(111)
 
 
-pylab.hist(dist, normed=1, histtype='stepfilled', color = 'DarkSlateBlue', alpha=0.2, label="Observed EDC")
+pylab.hist(dist, normed=1, histtype='stepfilled', color = 'DarkSlateBlue', alpha=0.2, label="$\mathrm{Observed\ EDC}$")
 pylab.hist(dist, normed=1, histtype='step', color = 'DimGray')
 
 
 #pylab.hist(dist, normed=1, label="Observed EDC")
 
 
-pylab.plot(x, dss, label = r"DSS, 11 angstrom",  linestyle = "-", linewidth = 2, color='CornflowerBlue')
-pylab.plot(x, dst, label = r"DST, 6.4 angstrom", linestyle = "-", linewidth = 2, color='Crimson')
-pylab.plot(x, edc, label = r"EDC, 0 angstrom" , linestyle = "-", linewidth = 2, color='DarkOrchid')
+pylab.plot(x, dss, label = r"$\mathrm{DSS,\ 11\ \AA}$",  linestyle = "-", linewidth = 2, color='CornflowerBlue')
+pylab.plot(x, dst, label = r"$\mathrm{DST,\ 6.4\ \AA}$", linestyle = "-", linewidth = 2, color='Crimson')
+pylab.plot(x, edc, label = r"$\mathrm{EDC,\ 0\ \AA}$" , linestyle = "-", linewidth = 2, color='DarkOrchid')
 
 
 pylab.rc('text', usetex=True)
@@ -91,20 +91,18 @@ pylab.ylim([0.0, 0.5])
 pylab.grid(True)
 
 pylab.legend()
-pylab.xlabel(r"$\mathrm{Ca-Ca\ Distance\ [angstrom]}$", fontsize=16)
+pylab.xlabel(r"$\mathrm{Ca-Ca\ Distance\ [\aa ngstr\"o m]}$", fontsize=16)
 pylab.ylabel(r"$\mathrm{Likelihood\ [a.u.]}$", fontsize=16)
 
 ticks = [r"$%i$" % (k) for k in range(0,35,5)]
-
-print ticks
 
 
 pylab.xticks(range(0,35,5)  ,[r"$%i$" % (k) for k in range(0,35,5)], fontsize=16)
 pylab.yticks(numpy.arange(0,0.6,0.1)  ,[r"$%3.1f$" % (k) for k in numpy.arange(0.0,0.6,0.1)], fontsize=16)
 
 filename = "lognormal"
-pylab.savefig(filename + "png")
-pylab.savefig(filename)
+pylab.savefig(filename + ".png")
+pylab.savefig(filename + ".pdf")
 os.system("pdfcrop " + filename + ".pdf " + filename + ".pdf > /dev/null")
 
 
