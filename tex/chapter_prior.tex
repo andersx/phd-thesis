@@ -167,12 +167,18 @@ However, since the data set is smaller than that of the TorusDBN (non-CS) model 
 
 
 
-\subsubsection{TorusDBN}
+\subsubsection{TorusDBN and TorusDBN-CS}
 
 
 \subsubsection{BASILISK}
 
+Similarly to biased sampling in TorusDBN, it is possible to sample side-chain angles via BASILISK. There is currently no chemical shift dependent equivalent to BASILISK, but such a module is currently in our plans.
 
-\subsection{Or both}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.65\textwidth]{figures/leu_sc.pdf}
+    \caption{Example of Leucine rotamer conformations sampled from BASILISK. Values were sampled using the backbone conformation dependent option via the FragBuilder Python API.}
+    \label{fig:leu_sc}
+\end{figure}
 

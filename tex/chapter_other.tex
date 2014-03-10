@@ -13,14 +13,63 @@ XLMS has previously been used to
 
 We considered several linkers of different lengths. The \textit{de facto} standard linkers, DSS and DST which measure 11 \aa ngstr\"o m and 6.4 \aa ngstr\"o m, respectively.
 
-\section{Hydrogen exchange mass spectroscopy (HXMS)}
-
 \begin{figure}
     \centering
     \includegraphics[width=0.65\textwidth]{figures/xcms/lognormal.pdf}
     \caption{linkers}
     \label{fig:linkers}
 \end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/hGH_rainbow.pdf}
+    \caption{linkers}
+    \label{fig:hGH_homology}
+\end{figure}
+
+\section{Hydrogen exchange mass spectroscopy (HXMS)}
+
+\subsection{Hydrogen bond criterion}
+
+The interresidue hydrogen bond criterion of the DSSP program\cite{dssp} is used to identify hydrogen bonds.
+The DSSP program uses an electrostatic model, assuming partial charges of -0.42 e and +0.20 e to the carbonyl oxygen and amide hydrogen respectively, and -0.42 e and +0.20 e to the carbonyl carbon and amide nitrogen, respectively.
+A hydrogen bond is empirically defined as having an interaction energy given as
+\begin{equation}
+E_\mathrm{HB} = \left(\frac{1}{r_\mathrm{ON}} + \frac{1}{r_\mathrm{OH}} - \frac{1}{r_\mathrm{CH}} - \frac{1}{r_\mathrm{CN}} \right)\cdot\ 27.89\ \mathrm{kcal/mol}
+\end{equation}
+stronger than a cut-off of -0.5 kcal/mol.
+
+\subsection{Beta-binomial model}
+The likelihood model that correlates a measured deuterium uptake to an integer number of hydrogen bonds in a strand is a simple model based on a beta-binomial distribution.
+
+\begin{equation}
+P(N_\mathrm{HB} = k | \alpha, \beta) = \binom{n}{k} \frac{B(k+\alpha, n - k + \beta)}{B(\alpha, \beta)}
+\end{equation}
+where $n$ is the length of the strand (i.e. the maximum possible number of hydrogen bonds), $N_\mathrm{HB}$ is the number of observed hydrogen bonds and $k \in {0, ... ,n}$ are the possible values of $N_\mathrm{HB}$. $\alpha$ and $\beta$ are variables and $B(x,y)$ is the beta-function given as:
+\begin{equation}
+B(x,y)=\frac{(x-1)!(y-1)!}{(x+y-1)!}
+\end{equation}
+The mean, $\mu$, and variance, $\sigma^2$, and variance of the beta-binomial distribution is
+\begin{eqnarray}
+    \mu      & = & \frac{n\alpha}{\alpha + \beta}\\
+    \sigma^2 & = & \frac{n\alpha\beta(n + \alpha + \beta)}{(\alpha + \beta)^2(1 + \alpha + \beta)}
+\end{eqnarray}
+If $\mu$ and $\sigma^2$ are estimated, then $\alpha$ and $\beta$ can then be derived for a strand of length $n$ as:
+\begin{eqnarray}
+    \alpha & = & -\frac{\mu(\mu^2 - \mu n + \sigma^2)}{\sigma^2 n + \mu^2 - \mu n}\\
+    \beta  & = & \frac{n\alpha}{\mu} - \alpha
+\end{eqnarray}
+
+
+\subsection{HXMS likelihood function}
+
+The simplified forward-model that correlates the protein structure, $\mathbf{X}$ to the measured values of deuterium uptake, $\{D_i\}$ is obtained by constructing an empirical function $f(D_i) \mapsto \mu$
+
+
+
+
+
 
 
 
