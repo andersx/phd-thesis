@@ -6,7 +6,7 @@ This section describes all test-targets which I have attempted to fold using the
 An especially interesting target in this study is the barley chymotrypsin inhibitor II (CI-2). CI-2 is a 63 residue protein which consists of an $\alpha$-helix which connects via a very flexible handle to a small $\beta$-sheet region.
 
 The chemical shifts data was obtained from Kaare Theilum, who used CYANA to an automatic assignment algorithm to assign chemical shifts. This means that a very time-intensive step was skipped for this target. 
-
+\subsection{Computational methodology}
 Several folding protocols were tried for this protein. All runs were performed as 72 independent trajectories which ran for 50 mio MC steps (iterations). Sampling was carried out using either TorusDBN or TorusDBN-CS to bias the backbone moves and the PROFASI force field was used in all simulations. Three simulations used an energy function based on CamShift using a cauchy distribution with variable $\gamma$ value as energy function. Additionally, three simulations used a potential on the radius of gyration to restrict the sampling to only compact structures. MUNINN was was set to multicanonical sampling and the thermodynamic beta-range was set to between 0.6 and 1.1, corresponding to a temperature range of 272K to 500K. The MC moves were set to 49\% CRISP moves, 2\% pivot moves and 49\% uniform side chain moves.
 
 
@@ -33,8 +33,21 @@ Several folding protocols were tried for this protein. All runs were performed a
     \end{tablenotes}
     \end{threeparttable}
     \end{center}
+    \label{tab:ci2}
 \end{table}
+\subsection{Folding results}
+Three of the 7 attempted simulation types sample structures close to the experimental X-ray structure 1YPA (here loosely defined as a CA-RMSD $<5$ \AA\ for all CA atoms. Results are summarized n thable
+None of the simulations that sample from TorusDBN (not chemical shift biased) are able to sample the correct fold.
 
+Furthermore, it was noted, that simulations that sample from either TorusDBN or TorusDBN-CS with only the PROFASI force field as energy function do not generate compact structures.
+To overcome this deficiency, additional simulations were carried out using a radius of gyration potential.
+In the case of sampling from TorusDBN-CS, the radius of gyration potential is enough to get a few samples with the correct fold. Here four of 72 threads would generate the correct fold, but unfortunately the lowest energy structures were found around 8-11 \AA\ CA-RMSD. Evidently, the PROFASI force field alone is not accurate enough to describe the native CI-2 structure.
+Three simulations were performed with an energy term based on CamShift in addition the PROFASI force field. The increased accuracy in the energy function causes increased sampling around the native state. 
+
+Due to a very flexible region of CI-2 (residues 33 to 42), and somewhat flexible tails the residue range used to calculate CA-RMSD values is restricted to residue 12-32,43-52 in the following.
+
+
+\subsubsection{Computational efficiency}
 All runs were carried out on 3 24-core AMD Opteron 6172 servers running at 2.1 GHz. A run similar to the most successful was also run carried out on a faster a 12-core Intel X5675 node running at 3.07 GHz (using new random seeds).
 This simulation took two days, with a total of 2 out of 12 threads successfully identifying the native structure as having the lowest energy.
 
@@ -52,4 +65,56 @@ This simulation took two days, with a total of 2 out of 12 threads successfully 
     \caption{Structures compared to the X-ray structure 1YPA. All structures are aligned using the residues 12-32,43-52. (a) shows the 3CI2 structure NNR structure. Note the flexible domain which is excluded from the fit-range. (b) Shows the lowest RMSD structure (1.113 \AA RMSD). (c) shows the lowest energy sample (2.76 \AA RMSD). }
     \label{fig:ci2}%
 \end{figure}
+
+
+\section{Folding of small proteins (\textless 100 AA)}
+
+\begin{table}[h]
+    \caption{Folded structure.}
+    \begin{center}
+    \begin{threeparttable}
+    \begin{tabular}{l l l l l  l l}
+Name                & Lengh    & Type & PDB     & RefDB     & RMSD-range    & Final RMSD  \\\hline
+Protein G           & 56       & a/b & 2OED    & 2575      & All           & ?           \\
+SMN Tudor Domain    & 59       & a/b & 1MHN    & 4899      & 5-54          & ?           \\
+Engrailed Homeodomain & 61     & B   & 1ENH    & 15536     & 8-53          & ?           \\
+CI-2                & 63       & a/b & 1YPA    & N/A\tnote{a}& 4-34,43-63  & ?           \\
+FF Domain           & 71       & a/b & 1UZC    & 5537      & 11-67         & ?           \\
+Ubiquitin           & 76       & a/b & 1UBI    & 17769     & 1-70          & ?
+    \end{tabular}
+    \begin{tablenotes}
+    \item[a] Using automatically assigned data obtained from Kaare Theilum (personal communitcation - see \url{https://github.com/andersx/cs-proteins}).
+    \end{tablenotes}
+    \end{threeparttable}
+    \end{center}
+    \label{tab:folding_small}
+\end{table}
+
+\section{Folding of larger proteins (\textgreater 100 AA)}
+
+\begin{table}[h]
+    \caption{Folded structure.}
+    \begin{center}
+    \begin{threeparttable}
+    \begin{tabular}{l l l l l l l}
+Name                & Lengh    & Type   & PDB     & BMRB    & RMSD-range    &  RMSD  \\\hline
+APO-LFABP           & 129      & a/b    & 1LFO    & 15429\tnote{a}  & All        &   \\
+Prolactin           & 199      & B      & 1RWS    & 5599      & 6-183            &   \\
+Top7                & 120      & a/b    & 2MBL    & 19404     & 5-104            &   \\
+MSRB                & 151      & a/b    & 3E0O    & 17008     & 36-105           &   \\
+WR73                & 183      & a/b    & 2LOY    & 16833     & 1-36,66-181      &   \\
+HR4660B             & 174      & a/b    & 2LMD    & 1870      & 16-162           &   \\
+Rhodopsin           & 219      & B      & 2KSY    & 16678     & All              &
+    \end{tabular}
+    \begin{tablenotes}
+    \item[a] Data was obtained from RefDB.
+    \end{tablenotes}
+    \end{threeparttable}
+    \end{center}
+    \label{tab:folding_large}
+\end{table}
+
+
+
+
 
