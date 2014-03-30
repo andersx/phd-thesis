@@ -2,6 +2,8 @@
 \usepackage[top=3.5cm, bottom=4cm, left=3.1cm, right=3.1cm, headsep=14pt]{geometry}
 \usepackage{amsmath}
 
+\usepackage{wrapfig}
+
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
@@ -22,6 +24,26 @@
 \usepackage[para,online,flushleft]{threeparttable}
 %\bibliographystyle{plos2009}
 \bibliographystyle{apalike}
+
+\usepackage{graphicx}
+\usepackage{listings}             % Include the listings-package
+\usepackage{hyperref}
+
+
+\definecolor{light-gray}{gray}{0.95}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily,
+    numbers=left,                           % Line nums position
+    numberstyle=\ttfamily\small,                      % Line-numbers fonts
+    stepnumber=1,                           % Step between two line-numbers
+    numbersep=5pt,
+    backgroundcolor=\color{light-gray}, % Choose background color
+    %frame=none,                             % A frame around the code
+    tabsize=2,                              % Default tab size
+}
+
 
 
 \DeclareMathAlphabet      {\mathbfit}{OML}{cmm}{b}{it}

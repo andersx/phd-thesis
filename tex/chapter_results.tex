@@ -69,6 +69,7 @@ This simulation took two days, with a total of 2 out of 12 threads successfully 
 
 \section{Folding of small proteins (\textless 100 AA)}
 
+
 \begin{table}[h]
     \caption{Folded structure.}
     \begin{center}
@@ -92,6 +93,115 @@ Ubiquitin           & 76       & a/b & 1UBI    & 17769     & 1-70          & ?
 
 \section{Folding of larger proteins (\textgreater 100 AA)}
 
+It is worth to note, that using sparse NMR data, only three structures \textgreater 200 residues have been determined: Alg13 (201 AA), Rhodopsin (225 AA) and MBP (376 AA) using the Rosetta program with the "resolution-adapted structural recombination" (RASREC) protocol
+
+Alg13 was solved using backbone chemical shifts only 52 NOE, to an CA-RMSD of 4 \AA~to the experimental NMR structure (2jzc).
+Rhodopsin was folded to an CA-RMSD of 1.6 \AA~to the X-ray structure using 215 NOE restraints, backbone chemical shifts chemical shifts and RDCs.
+The MBP protein is a two-domain protein of 376 residues.
+MBP was folded to an RMSD of 3.6 \AA~using 1235 NOE restraints, backbone chemical shifts chemical shifts and RDCs.
+The NOEs corresponded to 55\% yield of restraints, which, however mostly were not automatically assigned.
+An attempt to use only automatically assigned NOEs yielded 455 restraints, which corresponds to a yield of 20\%. Using these, however, the MBP structure could only be determined to a total CA-RMSD of 12.3 \AA.
+The N-terminal domain was converged to 2.7 \AA, but the C-terminal domain and the angle between the two domains was incorrectly folded.
+
+\subsection{Folding protocol}
+This section presents folding results on a set of larger proteins (\textgreater 100 AA) with known structures.
+
+The protocol which folded Rhodopsin and Prolactin can be executed from PHAISTOS via the following commands. The third refinement stage is the same as the initial folding stage, only with 5,000,000 iterations and 8 threads.
+
+\subsubsection{Initial folding stage:}
+\begin{lstlisting}
+./phaistos --aa-file rhodopsin.aa \
+  --iterations 50000000 \
+  --threads 72 \
+  --monte-carlo-muninn 1 \
+  --monte-carlo-muninn-min-beta 0.6 \
+  --monte-carlo-muninn-max-beta 1.1 \
+  --monte-carlo-muninn-independent-threads 1 \
+  --monte-carlo-muninn-weight-scheme multicanonical \
+  --backbone-dbn-torus-cs 1 \
+  --backbone-dbn-torus-cs-initial-nmr-star-filename \
+                                      rhodopsin.str \
+  --energy-profasi-cached 1 \
+  --energy-isd-dist 1 \
+  --energy-isd-dist-likelihood square_well \
+  --energy-isd-dist-data-filename noe_ilv.txt \
+  --energy-isd-dist-sample-gamme 0 \
+  --energy-isd-dist-sample-sigma 0 \
+  --energy-isd-dist-weight 0.0078125 \
+  --move-backbone-dbn 1 \
+  --move-backbone-dbn-weight 0.08 \
+  --move-backbone-dbn-implicit-energy 1 \
+  --move-crisp-dbn-eh 1 \
+  --move-crisp-dbn-eh-weight 0.42 \
+  --move-sidechain-uniform 1 \
+  --move-sidechain-uniform-weight 0.5
+\end{lstlisting}
+
+\subsubsection{Relaxation stage:}
+\begin{lstlisting}
+./phaistos --pdb-file rhodopsin_lowest_energy1.pdb \
+  --init-from-pdb 1 \
+  --iterations 2000000 \
+  --threads 8 \
+  --monte-carlo-metropolis-hastings 1 \
+  --monte-carlo-metropolis-hastings-declash-on-reinitialize 0 \
+  --backbone-dbn-torus-cs 1 \
+  --backbone-dbn-torus-cs-initial-nmr-star-filename \
+                                      rhodopsin.str \
+  --energy-profasi-cached 1 \
+  --energy-pp-compactness 1 \
+  --move-backbone-dbn 1 \
+  --move-backbone-dbn-weight 0.08 \
+  --move-backbone-dbn-implicit-energy 1 \
+  --move-crisp-dbn-eh 1 \
+  --move-crisp-dbn-eh-weight 0.42 \
+  --move-sidechain-uniform 1 \
+  --move-sidechain-uniform-weight 0.5
+\end{lstlisting}
+
+
+\subsection{Rhodopsin (225 residues)}
+
+Since the ILV(W) data set used by Rosetta was not available, simulated ILV restraints from the PDB structure 1h68 was used instead.
+A very conservative simulation of only 63 synthetic NOE restraints was used, which corresponds to around 4\% assigned long-range contacts. The initial folding stage converged to around 6.8 as the lowest energy cluster - see Fig.~\ref{fig:rhodopsin}). Two threads out of 72 converged to this native-like cluster.
+
+The refinement stage with only 63 NOEs, however, did not converge to a lower CA-RMSD.
+The Rosetta data set includes 213 contacts, and a similar, less conservative synthetic NOE data was simulated from the PDB structure 1h68, in order to see, if an increased number of NOE restraints could drive the RMSD down.
+ This resulted in 195 NOE restraints, which corresponds to 13\% assigned NOEs.
+Using this, larger, set of restraints during the refinements gave a substantial decrease in CA-RMSD for the lowest energy sample to 3.6 \AA.
+
+It must be noted, however, that in both the folding and refinment stages, samples are obtained with less than 2650 kcal/mol (calculated as the Profasi force field energy plus the likelihood from Torus-DBN-CS given the experimental chemical shifts), while the native energy is 2730 kcal/mol.
+This discrepancy is likely due the lack of accurate non-local information in the Profasi and Torus-DBN-CS models.
+
+Further refinement was attempted with the CamShift energy-term instead of the Torus-DBN-CS model, but was found to be too slow to be practically feasible.
+
+\begin{figure}%
+    \centering
+    \subfloat[Energy-scoring during folding stage.]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/folding_data.pdf}}
+    }\quad
+    \subfloat[Energy-scoring during refinement stage.]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement_data.pdf}}
+    }\\
+    \subfloat[Bottom view of folding stage lowest energy sample (blue).]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/folding_bottom.pdf}}
+    }\quad
+    \subfloat[Bottom view of refinement stage lowest energy sample (red).]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement_bottom.pdf}}
+    }\\
+    \subfloat[Side view of folding stage lowest energy sample (blue).]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/folding.pdf}}
+    }\quad
+    \subfloat[Side view of refinement stage lowest energy sample (red).]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement.pdf}}
+    }\\
+    \caption{Some caption}
+    \label{fig:rhodopsin}%
+\end{figure}
+
+
+
+
 \begin{table}[h]
     \caption{Folded structure.}
     \begin{center}
@@ -104,7 +214,7 @@ Top7                & 120      & a/b    & 2MBL    & 19404     & 5-104           
 MSRB                & 151      & a/b    & 3E0O    & 17008     & 36-105           &   \\
 WR73                & 183      & a/b    & 2LOY    & 16833     & 1-36,66-181      &   \\
 HR4660B             & 174      & a/b    & 2LMD    & 1870      & 16-162           &   \\
-Rhodopsin           & 219      & B      & 2KSY    & 16678     & All              &
+Rhodopsin           & 219      & B      & 2KSY    & 16678     & All              & 3.2
     \end{tabular}
     \begin{tablenotes}
     \item[a] Data was obtained from RefDB.
