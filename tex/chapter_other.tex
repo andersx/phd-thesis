@@ -1,3 +1,63 @@
+\chapter{Evolutionary distance constraints}
+
+As discussed previously, it is increasingly difficult to obtain sufficient distance restraints as the size of the protein increases.
+A recently developed methodology uses sequence analysis to infer residue contacts in 3D space. 
+
+In brief, the method works by identifying sequence co-variation, which retains favorable contacts between residues.
+This way, pair of residues which are probable to be close in 3D space can be identified.
+The procedure is briefly summarized in Fig.~\ref{fig:evo_constraint}.
+
+In this proof-of-concept study, 270 contacts were obtained from Wouter Boomsma (personal communications) for the 269 residue protein Savinase.
+The restraints were simply treated as NOE restraints using existing code.
+A similar simulation to that which folded Rhodopsin was adopted. 
+In terms of computational resources, these were increased to 100 threads and $75 \time 10^6$ iterations, compared to only 72 threads and $50 \time 10^6$ iterations for the Rhodopsin simulation.
+One thread identified a native-like structure.
+
+
+
+\begin{figure}%
+    \centering
+    \subfloat[Lowest RMSD sample]{
+        \includegraphics[width=0.49\textwidth]{figures/savinase_low_e.pdf}
+        %{\includegraphics[width=0.42\textwidth]{sigma_prior.pdf} }
+    }
+    \subfloat[Lowest energy sample]{
+        \includegraphics[width=0.49\textwidth]{figures/savinase_low_rmsd.pdf}
+    }
+    \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
+    \label{fig:savinase_fold}%
+\end{figure}
+
+
+% 
+% \begin{figure}
+%     \centering
+%     \caption{Savinase folded}
+%     \label{fig:savinase_align}
+% \end{figure}
+% 
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.45\textwidth]{figures/savinase_low_rmsd.pdf}
+%     \caption{Savinase folded}
+%     \label{fig:savinase_align}
+% \end{figure}
+% 
+
+
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/evo_constraint.pdf}
+    \caption{Evolutionary constraints}
+    \label{fig:evo_constraint}
+\end{figure}
+
+
+%Distance constraints from evolutionary sequence comparison
+%To supplement NMR data for larger proteins we exploit recent breakthroughs in our ability to understand quantitatively the constraints on structure observed through evolution. More precisely, it is now possible to predict with sufficient accuracy whether amino acids are spatially close to one another in a protein structure by looking at the co-variation of amino acids during evolution (Marks et al. 2011). In a proof-of-concept study we used this approach to predict 270 contacts from a multiple sequence alignment of the 269-residue long enzyme Savinase. When used in a simulation protocol together with backbone chemical shifts we obtained a X Å structure (Figure 3c), corresponding to one of the most accurate NMR structures of a large protein obtained using only chemical shifts.
+
 \chapter{Mass-spectroscopy in protein structure determination}
 
 This section introduces the two experimental methods, hydrogen exchange mass spectroscopy (HXMS) and cross-correlation mass spectroscopy (XCMS), and possible application in protein folding.

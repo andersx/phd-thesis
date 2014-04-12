@@ -3,31 +3,54 @@
 
 This section introduces the formalism for Monte Carlo simulations which includes both physical energy terms as well as a probabilistic energy terms based on experimentally observed chemical shifts.
 These equations presented are not new, but have not been published in the form in which they are presented here.
-The intention is to present the equations in the form in which they are implemented in PHAISTOS,  so that they can easily be re-implemented in other programs by others.
+The intention is to present the equations in the form in which they are implemented in PHAISTOS,  so that they can easily be re-implemented in other programs by others. 
+Simulations using the CamShift and ProCS chemical shifts predictors presented later in this thesis employ the equations presented in this chapter.
 
-\section{Defining an energy function from Bayes' theorem}
-A simplistic approach to this problem is to is to define a hybrid energy by defining a penalty function that describes the agreement between experimental data and data calculated from a proposed protein structure with a physical energy (such as from a molecular mechanics force field).
-A structure is then determined by minimizing
+\section{Hybrid energy schemes}
+There is no one way to include experimental observations in simulations, and combine these with known laws of physics.
+A simplistic approach to this problem is to is to define a hybrid energy by defining a penalty function that describes the agreement between experimental data and data calculated from a proposed model with a physical energy (such as from a molecular mechanics force field).
+A structure can then determined, for instance, by minimizing
 \begin{equation}
 E_{\mathrm{hybrid}}= w_{\mathrm{data}}\ E_{\mathrm{data}}+E_{\mathrm{physical}}.
+\label{eq:hybrid_definition}
 \end{equation}
-This approach, however, does not uniquely define neither shape nor weight of $E_{\mathrm{data}}$.
-Chemical shifts have been combined with physical energies in a multitude of ways, e.g., weighted RMSD values or harmonic constraints.
-Vendruscolo and co-workers implemented a "square-well soft harmonic potential", and corresponding molecular gradients and were able to run a chemical shift-biased MD simulation.
+This concept of using a hybrid energy to determine a protein structure was pioneered by Jack and Levitt who simultaneously minimized a molecular mechanics force field energy and the experimental R-factor for the BPTI protein \cite{JackLevitt}.
+This approach, however, does not uniquely define neither shape nor weight of $E_{\mathrm{data}}$, and the resulting structure will necessarily depend on these (ill-defined) choices.
+
+Consequently, chemical shifts have been combined with physical energies in a multitude of ways, e.g., weighted RMSD values or harmonic constraints.
+The groups of Bax and Baker added the chi-square agreement between SPARTA predicted chemical shift values and experimental chemical shifts with an empirical weight of 0.25 to the ROSETTA all-atom energy \cite{BakerBax}. This methodology was used to determine the structure of 16 small to medium sized proteins.
+
+The CHESHIRE method \cite{cheshire} uses an hybrid energy function, where a classical energy term is divided by the logarithm of a sum of weighted correlation-coefficients between SHIFTX calculated chemical shifts and experimental values.
+Here alpha-hydrogen chemical shifts are weighted by 18 and nitrogen and carbon chemical shifts carry a weight of 1.
+This hybrid energy is used in the refinement step of the CHESHIRE protocol, and was used to determine the structure for 11 proteins to a backbone RMSD of 1.21 to 1.76 \AA.
+
+Vendruscolo and co-workers implemented a "square-well soft harmonic potential", and corresponding molecular gradients and were able to run a chemical shift-biased MD simulation using the CamShift chemical shift predictor \cite{CSMD}. Subsequently, the trajectory snapshots were re-weighted by multiplying the chemical shift energy term by an empirical weight of 5.
+Using the empirically optimized balance between energy terms, the native state could be determined from the trajectories for 11 small proteins.
+
 In all cases the parameters and weights of $E_{\mathrm{data}}$ had to be carefully tweaked by hand, and it is not clear how to choose optimal parameters.
+For instance, different types of chemical shifts may (for optimal results) require different weighting, and a brute-force of these these parameters is not straight-forward.
 
-The inferential structure determination (ISD) principles introduced by Rie-ping, Habeck and Nigles \cite{Rieping2005}defines a Bayesian formulation of Eq XX. In the following section the equations of an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy. First remember Bayes' theorem which relates a conditional probability ($A$ given $B$) with its inverse:
+\section{Defining an energy function from Bayes' theorem}
+The inferential structure determination (ISD) principles introduced by Rieping, Habeck and Nigles \cite{Rieping2005} defines a Bayesian formulation of Eq.~\ref{eq:hybrid_definition}. The ISD approach rigorously defines the shape of $E_{\mathrm{data}}$ from the definition of an error model, and allows for the weights to be determined automatically as well. In the following section the equations for an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy.
+
+First remember Bayes' theorem which relates a conditional probability (here $A$ given $B$) with its inverse:
 \begin{equation}
-p\left(A | B \right) =\frac{p\left(B | A \right)p\left(A\right)}{p\left(B \right)} 
+p\left(A | B \right) =\frac{p\left(B | A \right)p\left(A\right)}{p\left(B \right)}
 \end{equation}
-Now consider a set of chemical shifts $\{\delta_i\}$, and the uncertainty to which these can be predicted $\{\sigma_i\}$ from a structure, $\mathbfit X$ (the experimental uncertainty is negligibly small compared to this). We have to make the basic assumption, that the error, given as $\Delta\delta_i = \left| \delta_i^{\mathrm{predicted}} - \delta_i^{\mathrm{experimental}}\right|$, approximately follows a Gaussian distribution with some standard deviation, but we need not hand-pick and assign any numeric value to the standard deviation.Furthermore, the Gaussian distribution is the least biasing distribution according to the principle of maximum entropy.
+Now consider a set of chemical shifts $\{\delta_i\}$, and the weight for each data point $\{w_i\}$ in the simulation, and finally the structure to be determined, $\mathbf X$.
+In this case, the most likely structure, $\mathbf X$, and optimal choice of $\{w_i\}$ can for instance be found by maximizing (via Bayes' theorem):
+\begin{eqnarray}
+    p\Big(\mathbf X, \{w_i\} \Big| \{\delta_i\} \Big) &=& \frac{p\Big( \{\delta_i\} \Big| \mathbf X, \{w_i\}\Big)p\Big(\mathbf X, \{w_i\} \Big)}{p\Big( \{\delta_i\}\Big)}\nonumber\\
+ &\propto& p\Big( \{\delta_i\} \Big| \mathbf X, \{w_i\}\Big)p\Big (\mathbf X, \{w_i\} \Big).
+\end{eqnarray}\\
+Here, \textit{marginal distribution} of $p\left( \{\delta_i\}\right)$ merely serves as a normalizing factor, and can be neglected.
+
+We have to make the basic assumption, that the error, given as $\Delta\delta_i = \left| \delta_i^{\mathrm{predicted}} - \delta_i^{\mathrm{experimental}}\right|$, approximately follows a Gaussian distribution with some standard deviation, but we need not hand-pick and assign any numeric value to the standard deviation.
+Furthermore, the Gaussian distribution is the least biasing distribution according to the principle of maximum entropy.
 
 
-In this case, the most likely structure, $\mathbfit X$, and optimal choice of $\{\sigma_i\}$ is found by maximizing (via Bayes' theorem)
-\begin{equation}
-p\Big(\mathbfit X, \{\sigma_i\} \Big| \{\delta_i\} \Big) = \frac{p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big)p\Big(\mathbfit X, \{\sigma_i\} \Big)}{p\Big( \{\delta_i\}\Big)}.
-\end{equation}\\
-Here, \textit{marginal distribution} of $p\left( \{\delta_i\}\right)$ merely serves as a normalizing factor and the \textit{likelihood} of $p\left( \{\delta_i\} | \mathbfit X, \{\sigma_i\}\right)$, is obtained as the product of the individual, Gaussian probabilities over all $n$ single chemical shift measurements. Nuclei of the same atom-type, here denoted by index $j$, (e.g. C$^\alpha$, H$^\alpha$, etc.) are assumed to carry the same uncertainly denoted by $\sigma_j$:
+
+and the \textit{likelihood} of $p\left( \{\delta_i\} | \mathbfit X, \{\sigma_i\}\right)$, is obtained as the product of the individual, Gaussian probabilities over all $n$ single chemical shift measurements. Nuclei of the same atom-type, here denoted by index $j$, (e.g. C$^\alpha$, H$^\alpha$, etc.) are assumed to carry the same uncertainly denoted by $\sigma_j$:
 
 \begin{eqnarray}
 p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big) &\simeq& \prod_{i=0}^{n} p\left( \Delta\delta_i | \mathbfit X, \sigma_i \right)\\
@@ -36,7 +59,7 @@ p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big) &\simeq& \prod_{i=0}^{n
 & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left( \sum_{i_j=0}^{n_j} - \frac{\Delta\delta_{i_j}^2}{2\sigma_j^2} \right) }\\
 & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  \frac{- \chi_j^2(\mathbfit X)}{2\sigma_j^2}\right) }
 \end{eqnarray}\\
-Furthermore, $p\left(\mathbfit X, \{\sigma_j\} \right)$ can be simplified as 
+Furthermore, $p\left(\mathbfit X, \{\sigma_j\} \right)$ can be simplified as
 
 \begin{eqnarray}
 p\Big(\mathbfit X, \{\sigma_j\} \Big) & \propto & p\Big(\{\sigma_j\} \Big| \mathbf X \Big) p\Big(\mathbf X\Big)\\
