@@ -2,109 +2,105 @@
 % \addcontentsline{toc}{chapter}{Chemical shifts in a probabilistic framework}
 
 This section introduces the formalism for Monte Carlo simulations which includes both physical energy terms as well as a probabilistic energy terms based on experimentally observed chemical shifts.
-These equations presented are not new, but have not been published in the form in which they are presented here.
-The intention is to present the equations in the form in which they are implemented in PHAISTOS,  so that they can easily be re-implemented in other programs by others. 
+The method presented is not new but has not been published in the form presented here.
+
+Working in a probabilistic framework is a powerful strategy for estimation of unknown parameters, and the intention is to present the equations in the form in which they are implemented in PHAISTOS,  so that they can easily be re-implemented in other programs by others.
 Simulations using the CamShift and ProCS chemical shifts predictors presented later in this thesis employ the equations presented in this chapter.
 
 \section{Hybrid energy schemes}
-There is no one way to include experimental observations in simulations, and combine these with known laws of physics.
+There are several ways to include experimental observations in simulations, and combine these with known laws of physics.
 A simplistic approach to this problem is to is to define a hybrid energy by defining a penalty function that describes the agreement between experimental data and data calculated from a proposed model with a physical energy (such as from a molecular mechanics force field).
-A structure can then determined, for instance, by minimizing
+A structure can then be determined, for instance, by minimizing
 \begin{equation}
 E_{\mathrm{hybrid}}= w_{\mathrm{data}}\ E_{\mathrm{data}}+E_{\mathrm{physical}}.
 \label{eq:hybrid_definition}
 \end{equation}
+where $w_{\mathrm{data}}$ is the weight that quantifies the belief in the energy-model $E_{\mathrm{data}}$ which defines the agreement between the proposed structure and the experimental data relative to the physical energy.
+
 This concept of using a hybrid energy to determine a protein structure was pioneered by Jack and Levitt who simultaneously minimized a molecular mechanics force field energy and the experimental R-factor for the BPTI protein \cite{JackLevitt}.
 This approach, however, does not uniquely define neither shape nor weight of $E_{\mathrm{data}}$, and the resulting structure will necessarily depend on these (ill-defined) choices.
 
 Consequently, chemical shifts have been combined with physical energies in a multitude of ways, e.g., weighted RMSD values or harmonic constraints.
 The groups of Bax and Baker added the chi-square agreement between SPARTA predicted chemical shift values and experimental chemical shifts with an empirical weight of 0.25 to the ROSETTA all-atom energy \cite{BakerBax}. This methodology was used to determine the structure of 16 small to medium sized proteins.
 
-The CHESHIRE method \cite{cheshire} uses an hybrid energy function, where a classical energy term is divided by the logarithm of a sum of weighted correlation-coefficients between SHIFTX calculated chemical shifts and experimental values.
-Here alpha-hydrogen chemical shifts are weighted by 18 and nitrogen and carbon chemical shifts carry a weight of 1.
-This hybrid energy is used in the refinement step of the CHESHIRE protocol, and was used to determine the structure for 11 proteins to a backbone RMSD of 1.21 to 1.76 \AA.
+The CHESHIRE method \cite{cheshire} uses a hybrid energy function, where a classical energy term is divided by the logarithm of a sum of weighted correlation-coefficients between SHIFTX calculated chemical shifts and experimental values.
+Here alpha-hydrogen chemical shifts are weighted by a factor of 18 relative nitrogen and carbon chemical shifts which carry a weight of 1.
+This hybrid energy is used in the refinement step of the CHESHIRE protocol, and was used to determine the structure of 11 proteins to a backbone RMSD of 1.21 to 1.76 \AA~relative to the corresponding X-ray or NMR structures.
 
 Vendruscolo and co-workers implemented a "square-well soft harmonic potential", and corresponding molecular gradients and were able to run a chemical shift-biased MD simulation using the CamShift chemical shift predictor \cite{CSMD}. Subsequently, the trajectory snapshots were re-weighted by multiplying the chemical shift energy term by an empirical weight of 5.
 Using the empirically optimized balance between energy terms, the native state could be determined from the trajectories for 11 small proteins.
 
 In all cases the parameters and weights of $E_{\mathrm{data}}$ had to be carefully tweaked by hand, and it is not clear how to choose optimal parameters.
-For instance, different types of chemical shifts may (for optimal results) require different weighting, and a brute-force of these these parameters is not straight-forward.
+For instance, different types of chemical shifts may (for optimal results) require different weighting, and a brute-force optimization of all parameters is not straight-forward.
 
 \section{Defining an energy function from Bayes' theorem}
-The inferential structure determination (ISD) principles introduced by Rieping, Habeck and Nigles \cite{Rieping2005} defines a Bayesian formulation of Eq.~\ref{eq:hybrid_definition}. The ISD approach rigorously defines the shape of $E_{\mathrm{data}}$ from the definition of an error model, and allows for the weights to be determined automatically as well. In the following section the equations for an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy.
+The inferential structure determination (ISD) principles introduced by Rieping, Habeck and Nigles \cite{Rieping2005} defines a Bayesian formulation of Eq.~\ref{eq:hybrid_definition}.
+The ISD approach rigorously defines the shape and weight of the $E_{\mathrm{data}}$ term from the definition of an error model, and allows for the weights to be determined automatically as well. In the following section the equations for an ISD approach are derived for combining the knowledge of experimental chemical shifts with a physical energy.
 
 First remember Bayes' theorem which relates a conditional probability (here $A$ given $B$) with its inverse:
 \begin{equation}
 p\left(A | B \right) =\frac{p\left(B | A \right)p\left(A\right)}{p\left(B \right)}
 \end{equation}
-Now consider a set of chemical shifts $\{\delta_i\}$, and the weight for each data point $\{w_i\}$ in the simulation, and finally the structure to be determined, $\mathbf X$.
-In this case, the most likely structure, $\mathbf X$, and optimal choice of $\{w_i\}$ can for instance be found by maximizing (via Bayes' theorem):
+Now consider a set of chemical shifts $\{\delta_i\}$, the weight for each chemical shift restraint $\{w_i\}$ in the simulation, and finally the structure to be determined, $\mathbf X$.
+This introduces an additional parameter, the weights, which must be determined.
+These weights describe the belief in the model that relates a structure to a chemical shift.
+In this case, the most likely structure, $\mathbf X$, and optimal choice of $\{w_i\}$ given the set of experimental chemical shifts $\{\delta_i\}$ (via Bayes' theorem) can for instance be found by maximizing:
 \begin{eqnarray}
     p\Big(\mathbf X, \{w_i\} \Big| \{\delta_i\} \Big) &=& \frac{p\Big( \{\delta_i\} \Big| \mathbf X, \{w_i\}\Big)p\Big(\mathbf X, \{w_i\} \Big)}{p\Big( \{\delta_i\}\Big)}\nonumber\\
  &\propto& p\Big( \{\delta_i\} \Big| \mathbf X, \{w_i\}\Big)p\Big (\mathbf X, \{w_i\} \Big).
+\label{eq:bayes_likelihood}
 \end{eqnarray}\\
-Here, \textit{marginal distribution} of $p\left( \{\delta_i\}\right)$ merely serves as a normalizing factor, and can be neglected.
-
-We have to make the basic assumption, that the error, given as $\Delta\delta_i = \left| \delta_i^{\mathrm{predicted}} - \delta_i^{\mathrm{experimental}}\right|$, approximately follows a Gaussian distribution with some standard deviation, but we need not hand-pick and assign any numeric value to the standard deviation.
-Furthermore, the Gaussian distribution is the least biasing distribution according to the principle of maximum entropy.
-
-
-
-and the \textit{likelihood} of $p\left( \{\delta_i\} | \mathbfit X, \{\sigma_i\}\right)$, is obtained as the product of the individual, Gaussian probabilities over all $n$ single chemical shift measurements. Nuclei of the same atom-type, here denoted by index $j$, (e.g. C$^\alpha$, H$^\alpha$, etc.) are assumed to carry the same uncertainly denoted by $\sigma_j$:
-
-\begin{eqnarray}
-p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big) &\simeq& \prod_{i=0}^{n} p\left( \Delta\delta_i | \mathbfit X, \sigma_i \right)\\
-& = & \prod_{j=0}^{m} \prod_{i_j=0}^{n_j} p\left( \Delta\delta_{i_j} | \mathbfit X, \sigma_j \right)\\
-& = & \prod_{j=0}^{m} \prod_{i_j=0}^{n_j} \frac{1}{\sigma_j \sqrt{2\pi}} \exp{ \left( - \frac{\Delta\delta_{i_j}^2}{2\sigma_j^2} \right) }\\
-& = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left( \sum_{i_j=0}^{n_j} - \frac{\Delta\delta_{i_j}^2}{2\sigma_j^2} \right) }\\
-& = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  \frac{- \chi_j^2(\mathbfit X)}{2\sigma_j^2}\right) }
-\end{eqnarray}\\
-Furthermore, $p\left(\mathbfit X, \{\sigma_j\} \right)$ can be simplified as
-
-\begin{eqnarray}
-p\Big(\mathbfit X, \{\sigma_j\} \Big) & \propto & p\Big(\{\sigma_j\} \Big| \mathbf X \Big) p\Big(\mathbf X\Big)\\
-& = & p\Big(\{\sigma_j\} \Big) p\Big(\mathbfit X\Big),
-\end{eqnarray}
-where it is assumed that the errors in the chemical shift prediction model are independent of the particular protein structure and \textit{vice versa}. The \textit{prior} distribution of $p\left(\{\sigma_j\} \right)$ is accounted for by proposing updates from a log-normal distribution (see next subsection). $p(\mathbfit X)$ of the molecular protein structure is here simply the Boltzmann distribution, i.e. 
+Here, the \textit{marginal distribution} of $p\left( \{\delta_i\}\right)$ merely serves as a normalizing factor, and can be neglected.
+The \textit{likelihood} distribution $p\Big( \{\delta_i\} \Big| \mathbf X, \{w_i\}\Big)$ describes the likelihood of the experimental chemical shifts, given a structure, $\mathbf X$, and the weights $\{w_i\}$.
+This requires (1) a forward model to calculate chemical shifts from given structure and (2) an error model that relates the degree of belief in the forward model (that is, the weights) to a probability, based on the difference between experimental and calculated values. 
+Later in this chapter, Gaussian and Cauchy distributions are discussed as error models.
+The forward model here is a chemical shift predictor, e.g.~CamShift, ProCS, etc.
+\\\\If we assume conditional independence, the \textit{prior} $p\Big (\mathbf X, \{w_i\} \Big)$ can be separated as
 \begin{equation}
-p(\mathbfit X) = \frac{1}{Z}\exp{\left(-\frac{E(\mathbfit X)}{k_\mathrm{B}T}\right)}
+p\Big(\mathbf X, \{w_i\} \Big) = p\Big(\mathbf X\Big) p\Big(\{w_i\} \Big).
+\end{equation}
+The two priors, $p\Big(\mathbf X\Big)$ and $p\Big(\{w_i\} \Big)$, in brief, describe the distribution of \textit{a priori} meaningful structures (i.e.~usually the Boltzmann distribution), and the probability distribution of the weights, respectively.
+In the following $p(\mathbf X)$ is simply the Boltzmann distribution, i.e. 
+\begin{equation}
+p(\mathbf X) = \frac{1}{Z(T)}\exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}
 \end{equation}\\
-where $E(\mathbfit X)$ is the (physical) potential energy of the protein structure, most often described by a molecular mechanics force field. $k_\mathrm{B}$ is the Boltzmann constant and $T$ is the temperature of interest. Luckily we need not calculate the partition function, $Z$, because the relative energy landscape is invariant under choice of normalization constant. Note that $p(\mathbfit X)$ also can be introduced via conformational sampling from a biased distribution, such as for example TorusDBN or BASILISK (mimicking the Ramachandran plot and side chain rotamer distributions, respectively). 
-\\\\
-Neglecting normalization constants, the total probability to be maximized is thus proportional to:
-\begin{eqnarray}
-&&p\Big( \mathbfit X, \{\sigma_i\} \Big| \{\delta_i\} \Big)  \propto  p\Big( \{\delta_i\} \Big| \mathbfit X, \{\sigma_i\}\Big) p\Big(\mathbfit X\Big) p\Big(\{\sigma_i\} \Big) \\
-&&\propto   \prod_{j=0}^{m} \left(\frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  - \frac{1}{2\sigma_j^2} \chi_j^2 \right) } \exp{\left(-\frac{E(\mathbfit X)}{k_\mathrm{B}T}\right)} p\Big(\{\sigma_j\} \Big) 
-\end{eqnarray}
+where $E(\mathbf X)$ is the (physical) potential energy of the protein structure, most often calculated using a molecular mechanics force field. $k_\mathrm{B}$ is the Boltzmann constant and $T$ is the temperature of interest.
+We need not calculate the partition function, $Z(T)$, because the relative energy landscape is invariant under choice of normalization constant.
+Note that $p(\mathbf X)$ also can be introduced via conformational sampling from a biased distribution, such as for example TorusDBN or BASILISK (mimicking the Ramachandran plot and side chain rotamer distributions, respectively). This is discussed later in this chapter.
 
-When $p(\{\sigma_j\})$ is introduced via biased sampling, the associated hybrid-energy to be evaluated is (again neglecting constant terms) 
-\begin{eqnarray}
-E_{\mathrm{hybrid}}\left(\mathbfit{X}\right) &=&- k_\mathrm{B}T \ln{} \Big(p\Big( \mathbfit X, \{\sigma_i\} \Big| \{\delta_i\} \Big)\Big) \\
-&= & E(\mathbfit X) - k_\mathrm{B}T \sum_{j=0}^{n_j}n_j \ln{} \left(\frac{1}{\sigma_j \sqrt{2\pi}} \right) + \frac{\chi_j^2}{2\sigma_j^2}
-\end{eqnarray}
-
-
-
-\subsection{Jeffreys' prior (general, one-parameter case)}
-The prior distribution of the nuisance parameter is inherently unknown.
-In such cases, it is necessary to use a prior distribution that will have only very little influence on the sampled value.
+The prior distribution of the weight parameter $p\Big(\{w_i\} \Big)$ is inherently unknown, except that it is some real number.
+%The probability distribution is then thought to some flat prior that will have only very little influence on the sampled value.
 One such \textit{uninformative prior} could for instance be a flat distribution over the positive real line.
-The concept of Jeffreys' priors are a generalization of flat priors. In the one parameter case the Jeffrey's prior is given as 
+This distribution, however, may be biased towards very large numbers.
+A standard method is to use the Jeffreys' prior, which is a generalization of flat priors, and can be used to model such unknown distributions while introducing only minimal bias.
+In the one parameter case the Jeffrey's prior is given as
 \begin{eqnarray}
     p(\theta) \propto \sqrt{\mathbf{I}(\theta)},
+    \label{eq:jeffreys}
 \end{eqnarray}
 where $\mathbf{I}(\theta)$ is the \textit{Fisher information} defined (in the one parameter case) as
 \begin{eqnarray}
     \mathbf{I}(\theta) = \left\langle \left( \frac{\partial}{\partial\theta} \ln p(x|\theta) \right)^2 \right\rangle.
 \end{eqnarray}
+The corresponding priors for the Gaussian and Cauchy distributions are discussed in the next sections.
 
+\subsection{Gaussian error model}
+Selecting an error model is the basic assumption that difference (the error) between a chemical shift calculated from a structure and the corresponding experimentally measured chemical shift, given as $\Delta\delta_i(\mathbf X) = \left| \delta_i^{\mathrm{predicted}}(\mathbf X) - \delta_i^{\mathrm{experimental}}\right|$, is distributed according to some defined distribution.
+Following the principle of maximum entropy, the Gaussian distribution is the least biasing distribution, and is the least biasing choice of error model.
+In this case, the weight parameter introduced in the previous section corresponds to the standard deviation, $\sigma$ of the Gaussian distribution.
+For simplicity, it is assumed that the mean of the Gaussian is zero.
+The total likelihood is then the product of the probability of each $\Delta\delta_i(\mathbf X)$:
 
-\subsection{Jeffreys' prior (Gaussian and Cauchy distributions)}
-Here we derive Jefferys' prior for the uncertainty of a Gaussian distribution, i.e.~a distribution on the form
+\begin{eqnarray}
+p\Big( \{\delta_i\} \Big| \mathbf X, \{\sigma_i\}\Big) & = & \prod_{i=0}^{n} p\left( \Delta\delta_i (\mathbf X)| \sigma_i \right)\nonumber\\
+& \propto & \prod_{i=0}^{n} \frac{1}{\sigma_i } \exp{ \Bigg( - \frac{\Delta\delta_{i}(\mathbf X)^2}{2\sigma_i^2} \Bigg) }
+    \label{eq:gauss_lik}
+\end{eqnarray}
+Next we derive Jeffreys' prior for the uncertainty of a generic Gaussian distribution of the form
 \begin{eqnarray}
     p(x|\mu, \sigma) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( \frac{-(x-\mu)}{2\sigma^2} \right).
 \end{eqnarray}
-This immediately gives us the Jeffreys' prior:
+Via Eqn.~\ref{eq:jeffreys}, this immediately gives us the Jeffreys' prior:
 \begin{eqnarray}
     p(\sigma)
     & \propto & \sqrt{\left\langle \left( \frac{\partial}{\partial\sigma}
@@ -112,12 +108,49 @@ This immediately gives us the Jeffreys' prior:
     & = & \sqrt{\left\langle \left( \frac{\partial}{\partial\sigma}
         \ln \left[\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( \frac{-(x-\mu)}{2\sigma^2} \right) \right]
         \right)^2 \right\rangle}\nonumber\\
-%    & = & \sqrt{\left\langle \left( \frac{\partial}{\partial\sigma} \frac{-(x-\mu)}{2\sigma^2} \right)^2 \right\rangle}\\
     & = & \sqrt{\left\langle \left(\frac{(x-\mu) - \sigma^2}{\sigma^3} \right)^2 \right\rangle}\nonumber\\
     & = & \sqrt{\int^{\infty}_{-\infty}  p(x|\mu, \sigma) \left(\frac{(x-\mu) - \sigma^2}{\sigma^3} \right)^2 dx}\nonumber\\
     & = &\sqrt{ \frac{2}{\sigma^2}} \ \propto \ \frac{1}{\sigma}
+        \label{eq:gauss_prior}
 \end{eqnarray}
-\\\\Similarly for the $\gamma$ parameter of the Cauchy distribution of the form
+Practically, it is impossible to have a separate weight for each individual chemical shift, and the chemical shift of nuclei of the same type thus carry the same weight.
+The forward model is similar for all nuclei of the same type, so this is somewhat well-justified.
+\\\\In the following equations, $j$ runs over atom types (e.g.~C$^\alpha$ or H$^\alpha$, etc), and $i$ over residue number.
+Inserting Eqn.~\ref{eq:gauss_lik} and Eqn.~\ref{eq:gauss_prior} into Eqn.~\ref{eq:bayes_likelihood}, we arrive at a total probability of:
+\begin{eqnarray}
+    p\Big(\mathbf X, \{\sigma_j\} \Big| \{\delta_{ij}\} \Big) 
+    &\propto& p\Big( \{\delta_{ij}\} \Big| \mathbf X, \{\sigma_j\}\Big)p\Big (\mathbf X \Big) p\Big ( \{\sigma_j\} \Big) \nonumber\\
+    &\propto&   \prod_{j=0}^{m} \prod_{i=0}^{n} \frac{1}{\sigma_j} \exp{ \Bigg( - \frac{\Delta\delta_{ij}(\mathbf X)^    2}{2\sigma_j^2} \Bigg) }
+    \exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}
+    \prod_{j=0}^{m} \frac{1}{\sigma_j}\nonumber\\
+    & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j }\right)^{n} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)\exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}}  \prod_{j=0}^{m} \frac{1}{\sigma_j}\nonumber\\
+    & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j }\right)^{n+1} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)\exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}}
+%    & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)
+%   & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  \frac{- \chi_j^2(\mathbfit X)}{2\sigma_j^2}\right) }
+\end{eqnarray}\\
+This can be converted to the corresponding hybrid-energy:
+\begin{eqnarray}
+    E_{\mathrm{hybrid}}
+    & = &- k_\mathrm{B}T \ln{ \Big(p\Big( \mathbfit X, \{\sigma_i\} \Big| \{\delta_{ij}\} \Big)\Big) }\nonumber\\
+    & = & E(\mathbfit X) + k_\mathrm{B}T \sum_{j=0}^{m}(n+1) \ln{ \left(\sigma_j \right)} + k_\mathrm{B}T \sum_{j=0}^{m} \sum_{i=0}^{n} \frac{    \Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2}
+\end{eqnarray}
+This expression, except for the term $(n+1) \ln{ \left(\sigma \right)}$, is essentially an energy function using harmonic constraints.
+It is, however, the balance between the two terms which include $\sigma$ that makes things work.
+The term $(n+1) \ln{ \left(\sigma \right)}$ yields the lowest energy for small values of $\sigma$, while the term $\frac{\Delta\delta (\mathbf X)^2}{2\sigma^2}$ is lower for large values of $\sigma$.
+
+Furthermore, the effect of the prior is minute: Using Jeffreys' prior this term is $(n+1) \ln{\left(\sigma\right)}$, whereas using a uniform prior the same term is $ n \ln{\left(\sigma\right)}$. Since $n$ is the number of measured chemical shifts of a certain type, the value is usually in the order of $\sim 100$.
+
+\subsection{Cauchy error model}
+Due to numerical instabilities in simulation using the Gaussian error model, a similar model was derived, using a Cauchy distribution as error model. The most notable difference between the Gaussian and Cauchy distributions is that the Cauchy distribution has fatter tails, and thus allows for larger outliers. The differences are  discussed in further detail in the Results section in this chapter.
+\\\\Similarly to Eqn.~\ref{eq:gauss_lik}, we assume that the location parameter of the Caucy-distribution is zero, and  use the scale-parameter, $\gamma$ as the weight. The total likelihood is then:
+
+\begin{eqnarray}
+    p\Big( \{\delta_i\} \Big| \mathbf X, \{\gamma_i\}\Big) 
+    & = & \prod_{i=0}^{n} p\left( \Delta\delta_i (\mathbf X)| \gamma_i \right)\nonumber\\
+    & \propto & \prod_{i=0}^{n} \frac{1}{\gamma_i \left[ 1+ \left(\frac{\Delta\delta_{i}(\mathbf X)}{\gamma_i}\right)^2\right]}
+    \label{eq:cauchy_lik}
+\end{eqnarray}
+And for the $\gamma$ parameter of the generic Cauchy distribution of the form
 \begin{eqnarray}
     p(x|x_0, \gamma) = \frac{1}{\pi\gamma\left[ 1 + \left(\frac{x-x_0}{\gamma} \right)^2\right]},
 \end{eqnarray}
@@ -130,35 +163,69 @@ p(\gamma)
 \ln \left[\frac{1}{\pi\gamma\left[ 1 + \left(\frac{x-x_0}{\gamma} \right)^2\right]} \right] \right)^2 \right\rangle}\nonumber\\
 & = & \sqrt{\left\langle \left( -\frac{\gamma^2 - (x-x_0)^2}{\gamma^3 +\gamma(x-x_0)^2} \right)^2 \right\rangle }\nonumber\\
 & = & \sqrt{\int^{\infty}_{-\infty}  p(x|x_0, \gamma) \left(  -\frac{\gamma^2 - (x-x_0)^2}{\gamma^3 +\gamma(x-x_0)^2}\right)^2 dx }\nonumber\\
-& = & \sqrt{\frac{1}{2\gamma^2}} \ \propto \ \frac{1}{\gamma}
+& = & \sqrt{\frac{1}{2\gamma^2}} \ \propto \ \frac{1}{\gamma} 
+\label{eq:cauchy_prior}
+\end{eqnarray}
+Again, it is practically impossible to have a separate weight for each individual chemical shift, and the chemical shift of nuclei of the same type thus carry the same weight.
+In the following equations, $j$ runs over atom types (e.g.~C$^\alpha$ or H$^\alpha$, etc), and $i$ over residue number.
+Assembling the Eqn.~\ref{eq:cauchy_lik} and Eqn.~\ref{eq:cauchy_prior} into Eqn.~\ref{eq:bayes_likelihood}, we arrive at the total probability of:
+\begin{eqnarray}
+    p\Big(\mathbf X, \{\gamma_j\} \Big| \{\delta_{ij}\} \Big) 
+    &\propto& p\Big( \{\delta_{ij}\} \Big| \mathbf X, \{\gamma_j\}\Big)p\Big (\mathbf X, \{\gamma_j\} \Big) \nonumber\\
+    &\propto&   \prod_{j=0}^{m} 
+    \prod_{i=0}^{n} \frac{1}{\gamma_j \left[ 1+ \left(\frac{\Delta\delta_{ij}(\mathbf X)}{\gamma_j}\right)^2\right]}
+    \exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}
+    \prod_{j=0}^{m} \frac{1}{\gamma_j}\nonumber\\
+    &= &   \prod_{j=0}^{m} \left( \frac{1}{\gamma_j} \right)^{n + 1}
+    \prod_{i=0}^{n} \frac{1}{ 1+ \left(\frac{\Delta\delta_{ij}(\mathbf X)}{\gamma_j}\right)^2}
+    \exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}
+\end{eqnarray}\\
+The associated hybrid energy is then given as:
+\begin{eqnarray}
+    E_{\mathrm{hybrid}}
+    & = &- k_\mathrm{B}T \ln{ \Big(p\Big( \mathbfit X, \{\gamma_i\} \Big| \{\delta_{ij}\} \Big)\Big) }\nonumber\\
+    & = & E(\mathbf X) 
+    + k_\mathrm{B}T \sum_{j=0}^{m}(n+1) \ln{ \left(\gamma_j \right)} 
+    + k_\mathrm{B}T \sum_{j=0}^{m} \sum_{i=0}^{n} \ln{\left[ 1 + \left(\frac{\Delta\delta_{ij}(\mathbf X)}{\gamma_j} \right)^2\right]}
 \end{eqnarray}
 
-\subsection{Sampling of nuisance parameters}
+
+
+\section{Sampling strategy for weight parameters}
 Since the nuisance parameters of the energy functions are unknown, they too must be sampled.
 The move used to update the value of the nuisance parameters must obey detailed balance:
 \begin{eqnarray}
-    p\left(\theta \rightarrow \theta'\right) = p\left(\theta' \rightarrow \theta\right)
+    p\left(w \rightarrow w'\right) = p\left(w' \rightarrow w\right)
 \end{eqnarray}
 The simplest Monte Carlo move is simply adding a number from a normal distribution with $\mu = 0$, this clearly obeys detailed balance, since the distribution is symmetric.
-For the scale parameter, $\gamma$ and $\sigma$, of the Cauchy and Gaussian distributions, respectively, we found a variance of $0.05$ in the normal distributed move to converge quickly and stably.
-Figure \ref{fig:example} show a histogram of sampled values of $\gamma$ and $\sigma$ for the NMR structure of Protein G (PDB-id: 2OED). 55 C-alpha 
-
-
-
-
+For the weight parameters, $\gamma$ and $\sigma$, of the Cauchy and Gaussian distributions, respectively, we found a variance of $0.05$ in the normal distributed move to converge quickly and stably.
 
 \begin{figure}%
     \centering
     \subfloat[Gaussian distribution]{
-        {\includegraphics[width=0.45\textwidth]{figures/sigma_prior.pdf} }
+        {\includegraphics[width=0.45\textwidth]{figures/sigma_principle.pdf} }
     }
     \qquad
     \subfloat[Cauchy distribution]{
-        {\includegraphics[width=0.45\textwidth]{figures/gamma_prior.pdf} }
+        {\includegraphics[width=0.45\textwidth]{figures/gamma_principle.pdf} }
     }
     \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
     \label{fig:example}%
 \end{figure}
+
+
+\subsection{Results -- sampling of weight parameters}
+Figure \ref{fig:example} show a histogram of 100,000 sampled values of $\gamma$ and $\sigma$ for the NMR structure of Protein G (PDB-id: 2OED). 
+No structural moves were used, and the results are thus temperature independent since the physical energy is constant.
+A total of 55 C$^\alpha$ experimental chemical shifts were used in this example (RefDB-id: 2575), and CamShift was used to calculate the chemical shifts. 
+The initial values of $\sigma$ and $\gamma$ was 10.0, in order to demonstrate the stable convergence using the simple move.
+
+In both simulations, the sampling algorithm converges sampling around the minimum of the energy function.
+In both cases, these minima are in very good agreement with the values calculated by the test set that was used to validate the performance of CamShift.
+The largest sampled bins are centered on $\sigma = 1.26$ ppm and $\gamma = 0.63$ ppm for the Gaussian and Cauchy distributions, respectively.
+These number can be compared to the maximum likelihood estimates (MLE) obtained on the 7 protein benchmark set used to determine the accuracy of Camshift.
+Here the values are $\sigma = 1.3$ ppm and $\gamma = 0.7$ ppm for the Gaussian and Cauchy distributions, respectively.
+
 
 \section{Prior distributions for protein structure}
 
@@ -205,69 +272,65 @@ Similarly to biased sampling in TorusDBN, it is possible to sample side-chain an
     \label{fig:leu_sc}
 \end{figure}
 
-
-
-
-
-\chapter{Graphical User Interface for PHAISTOS}
-
-Setting up simulations in PHAISTOS requires expert knowledge about the program. 
-Firstly, while all modules and settings have reasonable default settings, there are still many things that cannot be specified via default alone, and secondly, the complete list of settings in PHAISTOS is around 2500 options that must be set or taken as default values.
-
-In order to make PHAISTOS more available to new users, I wrote a GUI can set up most simulations for most of the simulations covered by this thesis.
-The GUI for PHAISTOS is aptly named Guistos and is written in Python 2.x using TkInter.
-
-Using the GUI the user is only presented with the three most basic choices for setting up the simulation.
-These are (1) choice of energy terms, (2) type of Monte Carlo simulation and finally (3) a selection of Monte Carlo moves.
-Setting up these via Guistos is discussed next.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.70\textwidth]{figures/guistos.pdf}
-    \caption{Screenshot of Guistos}
-    \label{fig:guistos}
-\end{figure}
-
-\subsubsection{Energy Options}
-
-Firstly, the Energy Options section allows the user to select the molecular mechanics force field.
-Currently two force fields are supported in PHAISTOS, which are the OPLS-AA/L force field with a GB/SA solvent model, and the PROFASI coarse grained force field.
-Use of the PROFASI force field requires the Monte Carlo moves to restraint the bond angle and lengths in the protein to Engh-Huber standard values.
-This is automatically done if the PROFASI force field is selected. 
-Conversely, the OPLS-AA/L force field includes energy terms for bond angles and lengths and these are degrees of freedom in the simulation if the OPLS-AA/L force field is selected.
-
-Additionally, the Energy Options section allows the user to add restrains from one type spectroscopic data.
-Currently energy terms based on CamShift 1.35 and ProCS are supported.
-These options requires a NMR-STAR formatted file containing experimental chemical shifts.
-
-
-\subsubsection{Monte Carlo Options}
-
-This section allows the user to select the four types of Monte Carlo simulation offered by PHAISTOS and the only the most basic options to set up that particular simulation:
-Metropolis-Hastings offers the choice of a constant temperature (in Kelvin).
-Muninn and Simulated Annealing offer the choice of a temperature range (in Kelvin), and additionally Muninn offers the choice between multicanonical or $1/k$ sampling.
-Greedy Optimization does not offer any customizable option. 
-
-\subsubsection{Monte Carlo Move Sets}
-
-Selecting a good mix of the different Monte Carlo moves offered by PHAISTOS can significantly speed up convergence of a simulation, compared to using an inferior move set.
-Choosing a good set of moves is in the opinion of this author currently somewhere in between black art and sheer luck, and requires a good deal of experience with simulations in PHAISTOS.
-
-To make it easier for new users, three move sets have been predefined using the experience of this author.
-These are named "small", "medium" and "large".
-The "small" move set is intended for uses such as refinement or sampling around a compact native state, 
-while the "medium" move set is intended for folding simulations that start from extended, but are expected to also sample a native state, 
-and finally the "large" move set is intended for sampling conformational space quickly, but will have problems with sampling compact structures.
-All move sets sample from TorusDBN (backbone angles) and BASILISK (side chain angles), and an option to remove this bias is also present.
-
-\subsubsection{Using Guistos}
-
-Guistos is freely released under the open source two-clause BSD-license, and can be downloaded from \url{https://github.com/andersx/guistos}. A screenshot of Guistos can be seen in Fig.~\ref{fig:guistos}. 
-After specifying all relevant settings in the Guistos window, a configuration-file is saved by pressing the "Save Config" button.
-A simulation in PHAISTOS can the be executed via the following command:
-\begin{lstlisting}
-./phaistos --config-file my_simulation.config
-\end{lstlisting}
+% \chapter{Graphical User Interface for PHAISTOS}
+% 
+% Setting up simulations in PHAISTOS requires expert knowledge about the program. 
+% Firstly, while all modules and settings have reasonable default settings, there are still many things that cannot be specified via default alone, and secondly, the complete list of settings in PHAISTOS is around 2500 options that must be set or taken as default values.
+% 
+% In order to make PHAISTOS more available to new users, I wrote a GUI can set up most simulations for most of the simulations covered by this thesis.
+% The GUI for PHAISTOS is aptly named Guistos and is written in Python 2.x using TkInter.
+% 
+% Using the GUI the user is only presented with the three most basic choices for setting up the simulation.
+% These are (1) choice of energy terms, (2) type of Monte Carlo simulation and finally (3) a selection of Monte Carlo moves.
+% Setting up these via Guistos is discussed next.
+% 
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.70\textwidth]{figures/guistos.pdf}
+%     \caption{Screenshot of Guistos}
+%     \label{fig:guistos}
+% \end{figure}
+% 
+% \subsubsection{Energy Options}
+% 
+% Firstly, the Energy Options section allows the user to select the molecular mechanics force field.
+% Currently two force fields are supported in PHAISTOS, which are the OPLS-AA/L force field with a GB/SA solvent model, and the PROFASI coarse grained force field.
+% Use of the PROFASI force field requires the Monte Carlo moves to restraint the bond angle and lengths in the protein to Engh-Huber standard values.
+% This is automatically done if the PROFASI force field is selected. 
+% Conversely, the OPLS-AA/L force field includes energy terms for bond angles and lengths and these are degrees of freedom in the simulation if the OPLS-AA/L force field is selected.
+% 
+% Additionally, the Energy Options section allows the user to add restrains from one type spectroscopic data.
+% Currently energy terms based on CamShift 1.35 and ProCS are supported.
+% These options requires a NMR-STAR formatted file containing experimental chemical shifts.
+% 
+% 
+% \subsubsection{Monte Carlo Options}
+% 
+% This section allows the user to select the four types of Monte Carlo simulation offered by PHAISTOS and the only the most basic options to set up that particular simulation:
+% Metropolis-Hastings offers the choice of a constant temperature (in Kelvin).
+% Muninn and Simulated Annealing offer the choice of a temperature range (in Kelvin), and additionally Muninn offers the choice between multicanonical or $1/k$ sampling.
+% Greedy Optimization does not offer any customizable option. 
+% 
+% \subsubsection{Monte Carlo Move Sets}
+% 
+% Selecting a good mix of the different Monte Carlo moves offered by PHAISTOS can significantly speed up convergence of a simulation, compared to using an inferior move set.
+% Choosing a good set of moves is in the opinion of this author currently somewhere in between black art and sheer luck, and requires a good deal of experience with simulations in PHAISTOS.
+% 
+% To make it easier for new users, three move sets have been predefined using the experience of this author.
+% These are named "small", "medium" and "large".
+% The "small" move set is intended for uses such as refinement or sampling around a compact native state, 
+% while the "medium" move set is intended for folding simulations that start from extended, but are expected to also sample a native state, 
+% and finally the "large" move set is intended for sampling conformational space quickly, but will have problems with sampling compact structures.
+% All move sets sample from TorusDBN (backbone angles) and BASILISK (side chain angles), and an option to remove this bias is also present.
+% 
+% \subsubsection{Using Guistos}
+% 
+% Guistos is freely released under the open source two-clause BSD-license, and can be downloaded from \url{https://github.com/andersx/guistos}. A screenshot of Guistos can be seen in Fig.~\ref{fig:guistos}. 
+% After specifying all relevant settings in the Guistos window, a configuration-file is saved by pressing the "Save Config" button.
+% A simulation in PHAISTOS can the be executed via the following command:
+% \begin{lstlisting}
+% ./phaistos --config-file my_simulation.config
+% \end{lstlisting}
 
 
 

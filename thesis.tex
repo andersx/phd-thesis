@@ -70,8 +70,8 @@
 %\setcounter{page}{2}
 %\cleardoublepage
 \include{tex/acknowledgements}
+\include{tex/chapter_dansk_resume}
 \include{tex/list_of_papers}
-\include{tex/chapter_introduction}
 \thispagestyle{empty}
 \renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{\chaptername\ \thechapter.\ #1}}{}}
 \setcounter{page}{1}
@@ -79,11 +79,15 @@
 \cleardoublepage
 \tableofcontents
 \cleardoublepage
-\include{tex/chapter_prior}
 \include{tex/chapter_field}
+\include{tex/chapter_phaistos}
+\include{tex/chapter_prior}
+\include{tex/chapter_gui}
 \include{tex/chapter_prediction}
 \include{tex/chapter_other}
 \include{tex/chapter_results}
+\include{tex/chapter_papers}
+\bibliography{tex/references}
 % Ring-current
 %\includepdf[pages={1-7}]{papers/ct2002607.pdf}
 % Phaistos
@@ -91,5 +95,4 @@
 % ProCS
 %\includepdf[pages={1-10}]{papers/journal_pone_0084123.pdf}
 
-\bibliography{tex/references}
 \end{document}
