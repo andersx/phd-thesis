@@ -1,18 +1,100 @@
 \chapter{Introduction to PHAISTOS}
 
-This section servers as an introduction to the PHAISTOS program, and the theory behind PHAISTOS. 
+This section servers as an introduction to the PHAISTOS program, and a (very) brief introduction to the theory behind PHAISTOS.
 This will give the relevant background to read the next chapters.
 
 \section{Markov Chain Monte Carlo}
 
-\section{Generative Probabilistic Models}
+One of the primary goals of simulations in PHAISTOS is to construct the Boltzmann distribution of a protein via Markov chain Monte Carlo (MCMC) sampling for a given potential energy surface at a given temperature.
+The Boltzmann distribution of a protein structure, $\mathbf X$, at a given temperature, $T$, is given by:
+\begin{equation}
+    \label{eq:boltzmann}
+    p(\mathbf X) = \frac{1}{Z(T)} \exp{\left( \frac{-E}{k_\mathrm{B}T}\right)},
+\end{equation}
+where $k_\mathrm{B}T$ is Boltzmann's constant and $Z(T)$ is the partition function at the given temperature.
 
-\section{Energy Functions}
+In Markov chain Monte Carlo the target distribution obtained by repeatedly proposing updates to the current state, and accepting or rejecting these updates with a certain acceptance probability.
 
-\subsubsection{Molecular Mechanics}
+It can be shown, that in for the infinitely sampled distribution  to converge to the target distribution, i.e.~ $p_\infty(\mathbf X) = p(\mathbf X)$, the Monte Carlo moves that are used to propose updates satisfy the principle of detailed balance.
+That is, the transition from the current state $\mathbf{X}$ to the proposed new state $\mathbf{X'}$ fulfills:
+\begin{equation}
+    \label{eq:detailed_balance}
+    p(\mathbf{X}) p(\mathbf{X} \rightarrow \mathbf{X'}) = 
+    p(\mathbf{X'}) p(\mathbf{X'} \rightarrow \mathbf{X})
+\end{equation}
+where $p(\mathbf{X} \rightarrow \mathbf{X'})$ is the probability to of moving from the state $\mathbf{X}$ to $\mathbf{X'}$ using a given move.
+If we further factorize $p(\mathbf{X} \rightarrow \mathbf{X'})$ into an acceptance probability $p_a$ and a move transition probability $p_m$, Eqn. \ref{eq:detailed_balance} gives:
+\begin{equation}
+    \label{eq:unbiased_mc}
+    \frac{p_a(\mathbf{X} \rightarrow \mathbf{X'})}
+         {p_a(\mathbf{X'} \rightarrow \mathbf{X})} =
+    \frac{p(\mathbf{X'})}
+         {p(\mathbf{X})}
+    \frac{p_m(\mathbf{X'} \rightarrow \mathbf{X})}
+         {p_m(\mathbf{X} \rightarrow \mathbf{X'})}
+\end{equation}
+Most of the moves in PHAISTOS are symmetric, that is the move bias ratio $p_m(\mathbf{X'} \rightarrow \mathbf{X}) / p_m(\mathbf{X} \rightarrow \mathbf{X'}) = 1$, but for some moves this is not true. 
+These moves can be exploited to vastly speed up convergence or bias the simulation, and are discussed later in Section \ref{chap:generative}.
 
-\subsubsection{PP-Compactness}
+\subsection{Metropolis-Hastings}
+The simplest Monte Carlo method that satisfies Eqn.~\ref{eq:unbiased_mc} is the Metropolis-Hastings method.
+Here a transition $\mathbf{X} \rightarrow \mathbf{X'}$ is accepted using the Metropolis-Hastings acceptance criterion:
+\begin{equation}
+    \label{eq:mc_mh}
+    p_a(\mathbf{X} \rightarrow \mathbf{X'}) = \min \left( 1,
+    \frac{p(\mathbf{X'})}
+         {p(\mathbf{X})}
+    \frac{p_m(\mathbf{X'} \rightarrow \mathbf{X})}
+         {p_m(\mathbf{X} \rightarrow \mathbf{X'})} \right)
+\end{equation}
+Note how the term $1/Z(T)$ term from Eqn.~\ref{eq:boltzmann} cancels out.
+Evaluation of the partition function is thus not necessary.
+The Metropolis-Hastings method is efficient when exploring native states, and simulations near the critical temperature.
+Unfortunately the Metropolis-Hastings method, compared to other MC methods, often gets stuck in local minima, and is therefore generally inefficient when simulating protein folding from an extended strand.
 
-\subsubsection{Multibody-Multinomial (MUMU)}
+\subsection{Generalized Ensembles}
+To avoid the slow convergence problem more advanced MC methods are available in PHAISTOS, which emphasize sampling at low energies, which is generally of higher interest in protein structure determination.
+These "generalized ensemble" methods are very similar to the Metropolis-Hastings methods, and the main difference in the acceptance criterion is that the target distribution $p(\mathbf{X})$ has been replace by a generalized weight function $w(\mathbf{X})$. 
+The acceptance criterion then becomes:
+\begin{equation}
+    \label{eq:mc_mh}
+    p_a(\mathbf{X} \rightarrow \mathbf{X'}) = \min \left( 1,
+    \frac{w(\mathbf{X'})}
+         {w(\mathbf{X})}
+    \frac{p_m(\mathbf{X'} \rightarrow \mathbf{X})}
+         {p_m(\mathbf{X} \rightarrow \mathbf{X'})} \right)
+\end{equation}
+PHAISTOS offer two generalized ensemble methods.
+In the multicanonical ensemble method, the weight function is $w_\textit{muca}(\mathbf{X}) = 1/g(E(\mathbf{X}))$, where $E(\mathbf{X})$ is the energy of the structure $\mathbf{X}$ and $g$ is the associated density of states.
+In the inverse-$k$ ensemble, the weight function is given by $w_\textit{1/k}(\mathbf{X}) = 1/k(E(\mathbf{X}))$ where $k(E(\mathbf{X})) = \int_{-\infty}^{E(\mathbf{X})} g(E') dE'$.
+
+Through reweighting, a converged simulation in a generalized ensemble can be reweighted to correspond to the Boltzmann distribution.
+
+
+\section{Monte Carlo Moves Using Generative Probabilistic Models}
+\label{chap:generative}
+PHAISTOS proposes new structure samples using a weighted set of MC moves, which each randomly changes the current protein structure in a certain way. 
+Side chain moves update the rotamer-conformation of a amino-acid single side chain by rotating the dihedral angles on the side chain.
+Backbone moves either perform a local perturbation to a strand of a only a few amino acids, or rotates a dihedral angle on the backbone.
+\\\\Using random moves which re-sample angles from a uniform distribution, and then constructing a target distribution via an acceptance criterion is a perfectly valid strategy.
+However, sampling from a uniform distribution usually lead to slow convergence.
+A common approach to alleviate this problem is using fragment assembly, in which small fragments of peptides are assembled from a library of common fragment motifs, such as beta-strands, helices and loops.
+This approach, however, introduces a bias in the selection probability $P_s$, which must be divided out if the simulation has to obey detailed balance.
+Furthermore, it is not clear, how to evaluate the move bias ratio $p_m(\mathbf{X'} \rightarrow \mathbf{X}) / p_m(\mathbf{X} \rightarrow \mathbf{X'})$ when sampling from a fragment library.
+
+A related approach to obtain a similar speed up is biased sampling. 
+PHAISTOS supports sampling of both side chain and backbone angles from such generative probabilistic models.
+In this approach, angles are sampled from distributions that are conditioned on prior knowledge. 
+
+
+
+
+\section{Protein Folding}
+While converged sampling of the potential energy surface will corresponds to the Boltzmann distribution, and the native folded state of the protein will usually correspond to the largest populated cluster of samples.
+
+However, due to practical limits on computational resources, it is generally impossible to perform converged sampling of the potential energy surface.
+Protein folding simulations from an extended strand will often be very far from convergence.
+
+An often used strategy is to determine a structure as the structure with the lowest energy throughout a simulation. This obviously neglect entropic effect which may be very important in certain cases, but in practice this has shown to be a very efficient strategy to determine structures close to those obtained experimentally.
 
 
