@@ -125,6 +125,7 @@ Inserting Eqn.~\ref{eq:gauss_lik} and Eqn.~\ref{eq:gauss_prior} into Eqn.~\ref{e
     \prod_{j=0}^{m} \frac{1}{\sigma_j}\nonumber\\
     & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j }\right)^{n} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)\exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}}  \prod_{j=0}^{m} \frac{1}{\sigma_j}\nonumber\\
     & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j }\right)^{n+1} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)\exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}}
+    \label{eq:gauss_joint}
 %    & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)
 %   & = & \prod_{j=0}^{m} \left( \frac{1}{\sigma_j \sqrt{2\pi}}\right)^{n_j} \exp{ \left(  \frac{- \chi_j^2(\mathbfit X)}{2\sigma_j^2}\right) }
 \end{eqnarray}\\
@@ -188,6 +189,66 @@ The associated hybrid energy is then given as:
     + k_\mathrm{B}T \sum_{j=0}^{m}(n+1) \ln{ \left(\gamma_j \right)} 
     + k_\mathrm{B}T \sum_{j=0}^{m} \sum_{i=0}^{n} \ln{\left[ 1 + \left(\frac{\Delta\delta_{ij}(\mathbf X)}{\gamma_j} \right)^2\right]}
 \end{eqnarray}
+
+
+\subsection{Marginalization of Weighting parameter}
+
+A third option also explored here, is the removal of the weight parameter by projection.
+This procedure is known as \textit{marginalization}, and is carried out by integrating over all values of the weight parameter.
+While integration is straight-forward for the Gaussian error-model, the similar expression for the Cauchy distribution does not integrate easily, and the Cauchy-model was not investigated here.
+From the joint probability distribution in Eqn.~\ref{eq:gauss_joint} we obtain the following:
+
+\begin{eqnarray}
+    p_{\mathrm{marginal}}\Big(\mathbf X \Big| \{\delta_{ij}\} \Big) 
+    & = & \int_0^\infty p\Big( \{\delta_{ij}\} \Big| \mathbf X, \{\sigma_j\}\Big)p\Big (\mathbf X \Big) p\Big ( \{\sigma_j\} \Big) d\sigma \nonumber\\
+    & = & \int_0^\infty \prod_{j=0}^{m} \left( \frac{1}{\sigma_j }\right)^{n+1} \exp{ \left( \sum_{i=0}^{n} - \frac{\Delta\delta_{ij}(\mathbf X)^2}{2\sigma_j^2} \right)\exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}} d\sigma\nonumber\\
+    & = &  \prod_{j=0}^{m}  \left( \sum_{i=0}^{n} \Delta\delta_{ij}(\mathbf X)^2 \right)^{n/2} \exp{\left(-\frac{E(\mathbf X)}{k_\mathrm{B}T}\right)}
+\end{eqnarray}\\
+The hybrid energy associated with the marginalized probability is then given as:
+\begin{eqnarray}
+    E_{\mathrm{hybrid}}
+    & = &- k_\mathrm{B}T \ln{ \Big(p_{\mathrm{marginal}}\Big( \mathbfit X \Big| \{\delta_{ij}\} \Big)\Big) }\nonumber\\
+    & = & E(\mathbf X) 
+    + \frac{n}{2} \sum_{j=0}^{m} \ln{\sum_{i=0}^{n} \Delta\delta_{ij}(\mathbf X)^2}
+\end{eqnarray}
+
+\subsection{Soft Square-Well Energy Function}
+The last type of hybrid energy term explored here, is a potential designed specifially for molecular dynamics simulations biased by the CamShift predictor. \cite{robustelli2009, CSMD}
+In this case, the hybrid-energy is given as:
+\begin{eqnarray}
+    E_{\mathrm{hybrid}}
+    = E(\mathbf X) + \alpha E_{\mathrm{CS}}(\mathbf X, \{\delta_{ij}\}),
+\end{eqnarray}
+where $E_{\mathrm{CS}}(\mathbf X, \{\delta_{ij}\})$ is an empirically derived penalty function that has been demonstrated through simulations to work well for protein structure determination.
+$\alpha$ is a weight parameter which was set to 1 during simulation.
+This penalty function is termed a "soft-square harmonic well", and given by:
+
+
+\begin{equation}
+    E_{\mathrm{CS}}(\mathbf X, \{\delta_{ij}\}) = \sum_{j=0}^{m} \sum_{i=0}^{n} E_{ij},
+\end{equation}
+with 
+\begin{equation}
+    E_{ij} = \begin{cases} 
+        0
+                & \mbox{if }  \Delta\delta_{ij}(\mathbf X) < n\epsilon_j\\ 
+        \left( \frac{\Delta\delta_{ij}(\mathbf X) - n \epsilon_j}{\beta_j}\right)^2
+                & \mbox{if }  n\epsilon_j < \Delta\delta_{ij}(\mathbf X) < x_0 \\ 
+        \left( \frac{x_0- n \epsilon_j}{\beta_j}\right)^2 + \gamma \tanh{
+            \frac{2(x_0- n)(\Delta\delta_{ij}(\mathbf X) - x_0)}{\gamma\beta_j^2}
+        }
+                & \mbox{if }  x_0 \leq \Delta\delta_{ij}(\mathbf X) .
+    \end{cases}
+\end{equation}
+where the parameters, $n\epsilon_j, x_0, \beta_j$ and $\gamma$ have been empirically adjusted.
+The potential has a flat bottom, with the width of $n\epsilon_j$.
+The flat bottom corresponds to the expected standard deviation of CamShift, to avoid overfitting in the simulation.
+The penalty function grows harmonically until a cut-off of $x_0$ and follows a somewhat flat hyperbolic tangent function after this.
+While there is no substantial theoretical backing
+
+
+
+
 
 
 
