@@ -1,48 +1,97 @@
+\chapter{Introduction}
 
-\chapter{Introduction to the field}
+The chemistry of a protein is tightly linked to its 3-dimensional structure.
+For this reason, protein structure determination is the basis of rational understanding of the chemistry of biological processes involving proteins.
 
-Nuclear magnetic resonance (NMR) spectra of proteins are increasingly used in protein chemistry to obtain knowledge about both structure and function of proteins.
+Most currently known protein structures have been solved by X-ray crystallography.
+One requirement for solving a structure this way is that the protein will crystallize.
+Modern crystallization methods, however, only have a success rate of 5\% [REF XX].
+In these cases, nucleic magnetic resonance (NMR) methods may be used with some success.
+Currently the Protein Data Bank [REF XX] contain 90,000 structures solved by X-ray and 9,000 structures solved by NMR methods, and around ~10,000 X-ray and ~500 NMR structures are being submitted each year. [REF X]
+\url{http://www.pdb.org/pdb/static.do?p=general_information/pdb_statistics/index.html}
 
-Conventionally, chemical shifts are measured and assigned in order to get the valuable nuclear Overhausen effect (NOE) and residual dipolar couplings (RDC) restraints used to determine a protein structure. NOE and RDC values relate directly to distances and relative orientations in the protein structure, and thus serve as a very powerful tool to determine the right structure.
+Conventional NMR protein structure determination methods records a multidimensional spectrum that correlate the resonance frequencies of several nuclei at the same time.
+From this spectrum, the common work flow is to first assign the chemical shifts of each nuclei.
+This process is largely automated for backbone nuclei, but is more involved for side chain atoms.
+This assignment information is used to identify peaks in the spectrum which correspond to distance restraints (NOE restraints) between pairs of atoms.
+These distance restraints are the used to generate ensembles of structures that satisfy the given set of restraints.
 
-The connection between chemical shifts and the protein structure is less straight-forward.
-The chemical shift depends on the shielding of an external magnetic field by the electron density around a nucleus.
-In other words, the wave function (and its derivatives with respect to the induced current and the nuclear magnetic moment) for a given protein structure must be known in order to know the related set of chemical shifts.
-Fortunately, a multitude of approximations exists, which allow the chemical shifts of a protein to be calculated with high accuracy on the time scale of milliseconds (compared several days for a gas-phase quantum mechanical calculation).
+Protein NMR spectroscopy, however, has several limitations.
+Large proteins have very crowded spectra, which complicates assignment, due to broad peaks and resulting spectral overlap.
+This is a substantial hindrance to assignment of the chemical shifts and the valuable NOE restraints.
+Consequently, around 95\% of all NMR structures in the PDB database thus have a size of only 200 amino acids or less.
+This can be compared to the average sizes of proteins in humans and \textit{E. coli}, which are around 400-600 and 200-400, respectively.
+These problem can be somewhat alleviate by deuteration which, however, decreases to number NOE restraints that can be obtained.
+Isotope labeling schemes which selectively label only certain side chains have been invented, as an efficient strategy for such problems.
 
-The fact that there is no clear geometric interpretation of chemical shifts makes it difficult to use as restraints to determine a protein structure.
-It is, however, well-known, that chemical shifts correlate with both local secondary structure as well as non-local structure. For instance, H$^\alpha$ chemical shifts are typically larger in an $\alpha$-helices and smaller in $\beta$-sheets, and H$^\mathrm{N}$ that engage in short hydrogen bonds typically have large chemical shifts than if they were in a longer hydrogen bond.
+\section{Computational methods}
+A different approach to solving a protein structure from the amino acid sequence is simulation of the energy landscape of the protein.
+This pratice is also refered to as \textit{protein folding}.
+In this approach, the possible conformations are sampled using a description of the physics of the proteins.
+Such \textit{ab initio} approaches have been used to determine structures up to XX using Monte Carlo simulations the ROSETTA program [REF XX].
+Another notable example is the simultaneous determination of structure and dynamics of several small proteins via very long molecular dynamics (MD) simulations using the Anton computer [REF XX].
 
-Typically chemical shifts are used in protein structure determination in two different ways.
-(1) via an energy function that scores the agreement between predicted chemical shifts and experimental structures or (2) via a biased introduced at the conformation sampling stage.
-
-Usually these approaches are employ Monte Carlo sampling, although Vendruscolo and co-workers have explored a chemical shift biased molecular dynamics approach.
-
-
-A number of methods to use chemical shifts in protein folding have been proposed. This section describes some of the most notable approaches.
-
-\section{ROSETTA}
+While these methods do not require any experimental input, the are extremely demanding in terms of the computational resources that are required.
+Furthermore, they usually fail to converge for structures $>100$ amino acids.
 
 The ROSETTA methodology is (currently) arguably the most successful method to determine a protein structure computationally.
-The basis of ROSETTA is an energy function that has been demonstrated to work remarkably. Briefly described, the all-atom ROSETTA energy function consists of several additive terms such as Lennard-Jones potentials, terms for solvent exposure, hydrogen bonding, electrostatic pair-interactions and dispersion interactions, and finally torsional potentials for backbone and side chain angles.
-The weights between the terms are empirically optimized.
+Recently, the Baker group showed, that inclusion of backbone chemical shifts and RDC data vastly improved the ROSETTA protocol and allowed structures up to 150 residues to be determined.
+The basis of ROSETTA fragment-assembly of local protein structure, combined with  refinement using an energy function that has been demonstrated to work remarkably.
+Briefly described, the all-atom ROSETTA energy function consists of several additive terms such as Lennard-Jones potentials, terms for solvent exposure, hydrogen bonding, electrostatic pair-interactions and dispersion interactions, and finally torsional potentials for backbone and side chain angles.
+The demonstrated accuracy of the energy function does come at the cost of computational speed and incomplete conformational sampling seems to be the prohibitive for further success for ROSETTA.
+This protocol has recently been further improved with inclusion of very sparse NOE data.
 
-The strength of the ROSETTA energy function is that in nearly all reported cases, the experimental X-ray structure has a lower energy than any other proposed structure. The demonstrated accuracy of the energy function does come at the cost of computational speed and incomplete conformational sampling seems to be the prohibitive for further success for ROSETTA. Consequently, most publication using ROSETTA employ hundreds to thousands of cores running for several days in order to determine one structure.
+This allowed 7 structures around 200 amino acids to be determined, to an accuracy of between 2.5 and 3.9 \AA~from the corresponding experimental X-ray structures
+Furthermore, a good structure for the 376 amino acids maltose binding protein could even be determined, but this required substantially more NOE data.
+These simulations, however required a 512-cores super computer for running several days, for each protein.
 
-Recently, the ROSETTA method has been extended to include various forms of NMR data. Chemical shifts are used to bias the fragments from which all-atom protein structures are constructed, which is the minimized through one of ROSETTA's protocols.
+Another notable example of protein structure determination methods that employ NMR data is is the CHESHIRE method [REF XX].
+The CHESHIRE method was the first method which solved structures using only chemical shifts, and uses a fragment-assembly approach followed by a Monte Carlo refinement using an all-atom force-field and an energy function that includes chemical shifts.
+This method was used to determine the protein structures from chemical shifts, and was demonstrated on 11 proteins between 54 and 123 amino acids in size to an accuracy of around 1.5 \AA~from the corresponding experimental X-ray structures.
+\\\\
+In the following section, the PHAISTOS program is introduced, and the formalism for inclusion of chemical shifts in PHAISTOS is derived.
+This is an attempt to address the two central challenges in protein folding: (1) complete conformational sampling and (2) accurate energy scoring of conformational samples.
 
-The largest structures determined by ROSETTA are summed up in Tab 
+These challenges are met as follows: (1) using a recently developed biased conformational sampling method and (2) by parametrizing an accurate chemical shift predictor and deriving an energy function based rigorously on Bayesian statistics, which allows this to be combined with existing energy functions in PHAISTOS.
 
-\section{CHESHIRE}
+The approach will be demonstrated on a test-set of protein with known structures ranging from 55 to 269 residues.
 
-\section{Vendruscolo CS-MD}
-
-\section{Meiler and Baker}
-
-\section{Ad Bax}
-
-\section{Conventional // CYANA, etc}
-
-\section{\textit{Ab initio} methods}
+%The weights between the terms are empirically optimized.
+%The strength of the ROSETTA energy function is that in nearly all reported cases, the experimental X-ray structure has a lower energy than any other proposed structure.
+%
+%\section{Old text}
+% Nuclear magnetic resonance (NMR) spectra of proteins are increasingly used in protein chemistry to obtain knowledge about both structure and function of proteins.
+%
+%%Conventionally, chemical shifts are measured and assigned in order to get the valuable nuclear Overhausen effect (NOE) and residual dipolar couplings (RDC) restraints used to determine a protein structure. 
+%NOE and RDC values relate directly to distances and relative orientations in the protein structure, and thus serve as a very powerful tool to determine the right structure.
+%
+%The connection between chemical shifts and the protein structure is less straight-forward.
+%The chemical shift depends on the shielding of an external magnetic field by the electron density around a nucleus.
+%In other words, the wave function (and its derivatives with respect to the induced current and the nuclear magnetic moment) for a given protein structure must be known in order to know the related set of chemical shifts.
+%Fortunately, a multitude of approximations exists, which allow the chemical shifts of a protein to be calculated with high accuracy on the time scale of milliseconds (compared several days for a gas-phase quantum mechanical calculation).
+%The fact that there is no clear geometric interpretation of chemical shifts makes it difficult to use as restraints to determine a protein structure.
+%It is, however, well-known, that chemical shifts correlate with both local secondary structure as well as non-local structure. For instance, H$^\alpha$ chemical shifts are typically larger in an $\alpha$-helices and smaller in $\beta$-sheets, and H$^\mathrm{N}$ that engage in short hydrogen bonds typically have large chemical shifts than if they were in a longer hydrogen bond.
+%
+% Typically chemical shifts are used in computational protein structure determination in two different ways.
+% (1) via an energy function that scores the agreement between predicted chemical shifts and experimental structures or (2) via a biased introduced at the conformation sampling stage.
+% 
+% Usually these approaches are employ Monte Carlo sampling, although Vendruscolo and co-workers have explored a chemical shift biased molecular dynamics approach.
+% 
+% A number of methods to use chemical shifts in protein folding have been proposed.
+% %This section describes some of the most notable approaches.
+% 
+% Recently, the ROSETTA method has been extended to include various forms of NMR data. Chemical shifts are used to bias the fragments from which all-atom protein structures are constructed, which is the minimized through one of ROSETTA's protocols.
+% 
+% The largest structures determined by ROSETTA are summed up in Tab 
+% 
+% \section{CHESHIRE}
+% 
+% \section{Vendruscolo CS-MD}
+% 
+% \section{Meiler and Baker}
+% 
+% \section{Ad Bax}
+% 
+% \section{\textit{Ab initio} methods}
 
 
