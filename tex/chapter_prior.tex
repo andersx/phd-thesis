@@ -261,33 +261,6 @@ The move used to update the value of the nuisance parameters must obey detailed 
 The simplest Monte Carlo move is simply adding a number from a normal distribution with $\mu = 0$, this clearly obeys detailed balance, since the distribution is symmetric.
 For the weight parameters, $\gamma$ and $\sigma$, of the Cauchy and Gaussian distributions, respectively, we found a variance of $0.05$ in the normal distributed move to converge quickly and stably.
 
-\begin{figure}%
-    \centering
-    \subfloat[Gaussian distribution]{
-        {\includegraphics[width=0.45\textwidth]{figures/sigma_principle.pdf} }
-    }
-    \qquad
-    \subfloat[Cauchy distribution]{
-        {\includegraphics[width=0.45\textwidth]{figures/gamma_principle.pdf} }
-    }
-    \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
-    \label{fig:example}%
-\end{figure}
-
-
-\subsection{Results -- sampling of weight parameters}
-Figure \ref{fig:example} show a histogram of 100,000 sampled values of $\gamma$ and $\sigma$ for the NMR structure of Protein G (PDB-id: 2OED). 
-No structural moves were used, and the results are thus temperature independent since the physical energy is constant.
-A total of 55 C$^\alpha$ experimental chemical shifts were used in this example (RefDB-id: 2575), and CamShift was used to calculate the chemical shifts. 
-The initial values of $\sigma$ and $\gamma$ was 10.0, in order to demonstrate the stable convergence using the simple move.
-
-In both simulations, the sampling algorithm converges sampling around the minimum of the energy function.
-In both cases, these minima are in very good agreement with the values calculated by the test set that was used to validate the performance of CamShift.
-The largest sampled bins are centered on $\sigma = 1.26$ ppm and $\gamma = 0.63$ ppm for the Gaussian and Cauchy distributions, respectively.
-These number can be compared to the maximum likelihood estimates (MLE) obtained on the 7 protein benchmark set used to determine the accuracy of Camshift.
-Here the values are $\sigma = 1.3$ ppm and $\gamma = 0.7$ ppm for the Gaussian and Cauchy distributions, respectively.
-
-
 \subsection{Molecular mechanics force field}
 
 One reasonable prior distribution for protein structure, $p(\mathbf{X)}$, is the Boltzmann distribution, e.g.:
@@ -303,41 +276,120 @@ The OPLS-AA/L is an all-atom force field with an additional solvation. The PROFA
 
 \section{Results}
 
-Here the performance of folding simulation using 11 different variations of the energy function derived and mentioned previously. The test were carried out on Protein G and the engrailed homeodomain (ENHD). The reference structures were the structures 2OED and 1ENH.
+
+
+\subsection{Results -- sampling of weight parameters}
+Figure \ref{fig:example} show a histogram of 100,000 sampled values of $\gamma$ and $\sigma$ for the NMR structure of Protein G (PDB-id: 2OED). 
+No structural moves were used, and the results are thus temperature independent since the physical energy is constant.
+A total of 55 C$^\alpha$ experimental chemical shifts were used in this example (RefDB-id: 2575), and CamShift was used to calculate the chemical shifts. 
+The initial values of $\sigma$ and $\gamma$ was 10.0, in order to demonstrate the stable convergence using the simple move.
+
+In both simulations, the sampling algorithm converges sampling around the minimum of the energy function.
+In both cases, these minima are in very good agreement with the values calculated by the test set that was used to validate the performance of CamShift.
+The largest sampled bins are centered on $\sigma = 1.26$ ppm and $\gamma = 0.63$ ppm for the Gaussian and Cauchy distributions, respectively.
+These number can be compared to the maximum likelihood estimates (MLE) obtained on the 7 protein benchmark set used to determine the accuracy of Camshift.
+Here the values are $\sigma = 1.3$ ppm and $\gamma = 0.7$ ppm for the Gaussian and Cauchy distributions, respectively.
+
+
+\begin{figure}%
+    \centering
+    \subfloat[Gaussian distribution]{
+        {\includegraphics[width=0.45\textwidth]{figures/sigma_principle.pdf} }
+    }
+    \qquad
+    \subfloat[Cauchy distribution]{
+        {\includegraphics[width=0.45\textwidth]{figures/gamma_principle.pdf} }
+    }
+    \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
+    \label{fig:example}%
+\end{figure}
+
+\subsection{Performance of energy functions}
+
+Here the performance of folding simulation using 11 different variations of the energy function derived and mentioned previously.
+All energy functions have been implemented in the CamShift module in PHAISTOS, which was also used to run all simulations.
+The test were carried out on Protein G and the engrailed homeodomain (ENHD). The reference structures were the structures 2OED and 1ENH.
 An overview of the different simulation types can be found in Table\ref{tab:prior_folds}.
-For both proteins, using a Gaussian model and sampling the $\sigma$ uncertainty does not lead to meaningful values for $\sigma$.
-In short, PHAISTOS is able to generate a structure which has no difference between experimental and calculated chemical shifts for a certain atom type.
-Consequently, the value of $\sigma$ converges to zero, which effectively freezes the structure in the simulation.
-
-
-
+For each energy function, 20 independent simulations were carried out for a total of 50,000,000 MC steps each.
+Each simulation was initialized from a different random, extended strand.
+Maximum likelihood estimated (MLE) values of the $\sigma$ and $\gamma$ weight parameters estimated take from the 7-protein test set reported in reference [Ref XX].
+For simulations where the weight parameter was sampled, an additional 500,000 Monte Carlo steps were carried out corresponding to the extra moves required to sample this weight (the computational overhead of these 500,000 moves is negligible).
+Chemical shifts were calculated using the CamShift module.
+All simulations used the PROFASI force field and sampling from either TorusDBN or TorusDBN-CS.
 \begin{table}[h]
     \caption{Protocols used in the comparison of energy functions and success rates.}
     \begin{center}
     \begin{threeparttable}
     \begin{tabular}{l l l l l l}
                 %& Force Field   &          & Correct fold\tnote{a} & Iterations/day\tnote{b}\\\hline
-Energy type & Weight  & TorusDBN-mode & Sampling Bias & Correct fold\tnote{a} & Correct scoring\\\hline
-Gauss       & Fixed   & Torus       & Biased   & 20/20  & 2/6  \\ 
-Gauss       & Sampled & Torus       & Biased   &  0/0   & 0/0  \\ 
-Cauchy      & Fixed   & Torus       & Biased   & 20/12  & 7/4  \\ 
-Cauchy      & Sampled & Torus       & Biased   & 20/5   & 6/1  \\ 
-Cauchy      & Sampled & Torus-CS    & Biased   & 20/20  & 4/2  \\ 
-Cauchy      & Sampled & Torus-CS    & No bias  &  0/0   & 0/0  \\ 
-Cauchy      & Sampled & Torus       & No bias  &  0/0   & 0/0  \\ 
-Square-well & Fixed   & Torus       & Biased   &  1/2   & 1/0  \\ 
-Marginalized & N/A    & Torus       & Biased   &  7/17  & 1/8  \\ 
-No CS       & N/A     & Torus-CS    & Biased   &  8/10  & 2/0  \\ 
-No CS       & N/A     & Torus       & Biased   &  0/0   & 0/0  \\ 
+Energy type & Weight  & TorusDBN-mode & Sampling Bias & Correct sampling\tnote{a} & Correct scoring\tnote{b}\\\hline
+Gauss         & Fixed   & Torus       & Biased   & 20/20  & 2/6  \\
+Gauss         & Sampled & Torus       & Biased   &  0/0   & 0/0  \\
+Cauchy        & Fixed   & Torus       & Biased   & 20/12  & 7/4  \\
+Cauchy        & Sampled & Torus       & Biased   & 20/5   & 6/1  \\
+Cauchy        & Sampled & Torus-CS    & Biased   & 20/20  & 4/2  \\
+Cauchy        & Sampled & Torus       & No bias  &  0/0   & 0/0  \\
+Cauchy        & Sampled & Torus-CS    & No bias  &  0/0   & 0/0  \\
+Square-well   & Fixed   & Torus       & Biased   &  1/2   & 1/0  \\
+Marginalized  & N/A     & Torus       & Biased   &  7/17  & 1/8  \\
+No CS         & N/A     & Torus       & Biased   &  0/0   & 0/0  \\
+No CS         & N/A     & Torus-CS    & Biased   &  8/10  & 2/0
     \end{tabular}
     \begin{tablenotes}
-        \item[a] Number of threads where the lowest energy sample has a CA-RMSD of $<3$ \AA\ (using all residues). Listed as xx for Protein G and yy for ENHD, i.e.~xx/yy.\\
         \item[a] Number of threads with a CA-RMSD of $<5$ \AA\ (using all residues). Listed as xx for Protein G and yy for ENHD, i.e.~xx/yy.\\
+        \item[b] Number of threads where the lowest energy sample has a CA-RMSD of $<3$ \AA\ (using all residues). Listed as xx for Protein G and yy for ENHD, i.e.~xx/yy.\\
     \end{tablenotes}
     \end{threeparttable}
     \end{center}
     \label{tab:prior_folds}
 \end{table}
+
+In two simulations, the bias was removed from the simulation, which corresponds to an unbiased simulation.
+Two reference simulations were carried out with no chemical shift energy-function, in order to analyze the effect of sampling from TorusDBN and the effect of the PROFASI force field.
+The simulations used a mix of 40\% biased CRISP-moves, 10\% biased pivot moves and 50\% uniform side chain moves.
+The simulation was carried out in the multicanonical ensemble via Muninn.
+Minimum and maximum $\beta$-values were set to 0.3 and 1.05, and the temperature was set to 300K.
+In all simulations, the number of threads which had samples below thresholds of 5, 3, 2 and 1 \AA~CA-RMSD from the crystal structure was recorded.
+Similarly, the number of threads in which the lowest energy structure was below thresholds of 5, 3, 2 and 1 \AA~CA-RMSD from the crystal structure was recorded.
+These figures are used to analyze whether sampling or correct energy scoring is are limiting factors in the particular simulations.
+The energy was calculated as the PROFASI energy multiplied by $k_{\mathrm{B}}T$ plus the chemical shift energy term plus the log-likelihood calculated from TorusDBN.
+An overview of these results can be seen in Fig.~\ref{fig:cauchy_results} (only simulations that had any samples below 5 \AA~CA-RMSD from the crystal structure are shown).
+
+For both proteins, using a Gaussian model and sampling the $\sigma$ uncertainty does not lead to meaningful values for $\sigma$.
+In short, PHAISTOS is able to generate a structure which has no difference between experimental and calculated chemical shifts for a certain atom type.
+Consequently, the value of $\sigma$ converges to zero, which effectively freezes the structure in the simulation.
+The simulations in which the move-bias from TorusDBN and TorusDBN-CS was removed did not sample any structures below 
+
+For simulations using Gaussian or Cauchy types of energy function all thread had samples below 5 \AA~CA-RMSD from the crystal structure for Protein G and between 5-20 for ENHD 
+The simulation with the square-well potential only 1 thread had samples below 5 \AA~for Protein G  and only 2 for ENHD. 
+For the simulation with marginalized weight parameters, the same figures were 7 and 17, respectively.
+The reference simulations with no chemical shift in the energy function had no samples below 5 \AA~for biased sampling from TorusDBN, but 8 and 10 threads below 5 \AA~for biased sampling from TorusDBN-CS.
+
+Comparing the number of threads for which the lowest energy sample was below 3 \AA~CA-RMSD from the crystal structure.
+For both proteins, using fixed weights is somewhat better than using sampled weights with the Cauchy distribution.
+The result for the square-well potential cannot be interpreted to a statistical significance because only one and two threads were close to the correct fold, but one thread correctly identified the folded state below 3 \AA~CA-RMSD as the lowest energy for Protein G.
+
+In conclusion, the Gauss and Cauchy perform well in sampling and scoring.
+The fixed MLE weights seem to be work equally well to sampling weights for the cauchy distribution, with no substantial differences.
+The performance of the energy with marginalized weights performed worse in guiding the sampling, but well in scoring samples for ENHD.
+The square-well potential did not improve the sampling much.
+The reason why it has previously been shown to work well, might be that it was combined with a better force-field (AMBER03) to which it was specifically designed.
+One clear conclusion is that it is useful to not remove the bias from TorusDBN, and keeping the TorusDBN-CS bias seems guide folding significantly more, even though this formally constitutes is double-counting of effect of knowledge about chemical shifts.
+
+
+
+
+\begin{figure}%
+    \centering
+    \includegraphics[width=0.75\textwidth]{figures/cauchy_folds/cauchy_folds.pdf}
+    \caption{Overview of folding simulations using 7 different chemical shift energy types. Sampling was biased by TorusDBN and the PROFASI energy term was used as well.
+             In (a) and (b) the number of threads where the lowest energy samples are under thresholds of 1, 2, 3 and 5 \AA~CA-RMSD from the crystal structure is plotted. 
+             The energy here is calculated as the PROFASI energy multiplied by $k_{\mathrm{B}}T$ plus the chemical shift energy term. 
+In (c) and (d), the log-likelihood from TorusDBN has been added to the total energy.
+In (e) and (f), the number of threads in which samples are found below under thresholds of 1, 2, 3 and 5 \AA~CA-RMSD from the crystal structure is plotted. 
+*In this simulation TorusDBN-CS is used instead of TorusDBN.}
+    \label{fig:cauchy_results}%
+\end{figure}
 
 
 

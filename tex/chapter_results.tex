@@ -5,7 +5,13 @@ This section describes all test-targets which I have attempted to fold using the
 
 An especially interesting target in this study is the barley chymotrypsin inhibitor II (CI-2). CI-2 is a 63 residue protein which consists of an $\alpha$-helix which connects via a very flexible handle to a small $\beta$-sheet region.
 
-The chemical shifts data was obtained from Kaare Theilum, who used CYANA to an automatic assignment algorithm to assign chemical shifts. This means that a very time-intensive step was skipped for this target. 
+The chemical shifts data was obtained using a fully automated procedure.
+The ADAPT-NMR [REF XX] protocol was used to record all necessary NMR data and automatically assign the chemical shifts.
+Data collection and assignment was completed in only 11 hours with minimal human intervention.
+As we demonstrate, a structure could be determined computationally from these chemical shifts in only two days running on 12 cores.
+
+
+
 \subsection{Computational methodology}
 Several folding protocols were tried for this protein. All runs were performed as 72 independent trajectories which ran for 50 mio MC steps (iterations). Sampling was carried out using either TorusDBN or TorusDBN-CS to bias the backbone moves and the PROFASI force field was used in all simulations. Three simulations used an energy function based on CamShift using a cauchy distribution with variable $\gamma$ value as energy function. Additionally, three simulations used a potential on the radius of gyration to restrict the sampling to only compact structures. MUNINN was was set to multicanonical sampling and the thermodynamic beta-range was set to between 0.6 and 1.1, corresponding to a temperature range of 272K to 500K. The MC moves were set to 49\% CRISP moves, 2\% pivot moves and 49\% uniform side chain moves.
 
@@ -42,14 +48,18 @@ None of the simulations that sample from TorusDBN (not chemical shift biased) ar
 Furthermore, it was noted, that simulations that sample from either TorusDBN or TorusDBN-CS with only the PROFASI force field as energy function do not generate compact structures.
 To overcome this deficiency, additional simulations were carried out using a radius of gyration potential.
 In the case of sampling from TorusDBN-CS, the radius of gyration potential is enough to get a few samples with the correct fold. Here four of 72 threads would generate the correct fold, but unfortunately the lowest energy structures were found around 8-11 \AA\ CA-RMSD. Evidently, the PROFASI force field alone is not accurate enough to describe the native CI-2 structure.
-Three simulations were performed with an energy term based on CamShift in addition the PROFASI force field. The increased accuracy in the energy function causes increased sampling around the native state. 
+Three simulations were performed with an energy term based on CamShift in addition the PROFASI force field.
+Demonstrably, the increased accuracy from a better energy function cause increased sampling around the native state.
 
-Due to a very flexible region of CI-2 (residues 33 to 42), and somewhat flexible tails the residue range used to calculate CA-RMSD values is restricted to residue 12-32,43-52 in the following.
+Due to a very flexible region of CI-2 (residues 33 to 42), and somewhat flexible tails the residue range used to calculate CA-RMSD values is restricted to residue 4-34,43-63 in the following.
+All runs were carried out on 3 24-core AMD Opteron 6172 servers running at 2.1 GHz. 
 
-
-\subsubsection{Computational efficiency}
-All runs were carried out on 3 24-core AMD Opteron 6172 servers running at 2.1 GHz. A run similar to the most successful was also run carried out on a faster a 12-core Intel X5675 node running at 3.07 GHz (using new random seeds).
+A run similar to the most successful was also run carried out on a faster a 12-core Intel X5675 node running at 3.07 GHz (using new random seeds).
 This simulation took two days, with a total of 2 out of 12 threads successfully identifying the native structure as having the lowest energy.
+This simulation yielded a lowest energy structure a 2.76 \AA~CA-RMSD from the X-ray structure, and a lowest RMSD structure at 1.11 \AA.
+
+The lowest RMSD was further refined by Lars Bratholm to a CA-RMSD of only 1.1 which took 24 hours on 8 cores.
+
 
 \begin{figure}%
     \centering
@@ -67,6 +77,11 @@ This simulation took two days, with a total of 2 out of 12 threads successfully 
 \end{figure}
 
 
+
+
+
+
+
 \section{Folding of small proteins (\textless 100 AA)}
 
 
@@ -76,12 +91,13 @@ This simulation took two days, with a total of 2 out of 12 threads successfully 
     \begin{threeparttable}
     \begin{tabular}{l l l l l  l l}
 Name                & Lengh    & Type & PDB     & RefDB     & RMSD-range    & Final RMSD  \\\hline
-Protein G           & 56       & a/b & 2OED    & 2575      & All           & ?           \\
-SMN Tudor Domain    & 59       & a/b & 1MHN    & 4899      & 5-54          & ?           \\
-Engrailed Homeodomain & 61     & B   & 1ENH    & 15536     & 8-53          & ?           \\
-CI-2                & 63       & a/b & 1YPA    & N/A\tnote{a}& 4-34,43-63  & ?           \\
-FF Domain           & 71       & a/b & 1UZC    & 5537      & 11-67         & ?           \\
-Ubiquitin           & 76       & a/b & 1UBI    & 17769     & 1-70          & ?
+Protein G           & 56       & a/b & 2OED    & 2575      & All           & 1.0           \\
+% Can't find data for SMN Tudor Domain :( :( :( :( :(, only the 3.3 number :(
+% SMN Tudor Domain    & 59       & a/b & 1MHN    & 4899      & 5-54          & 3.3       \\
+Engrailed Homeodomain & 61     & B   & 1ENH    & 15536     & 8-53          & 1.1           \\
+CI-2                & 63       & a/b & 1YPA    & N/A\tnote{a}& 4-34,43-63  & 2.6          \\
+FF Domain           & 71       & a/b & 1UZC    & 5537      & 11-67         & 10.2*          \\
+Ubiquitin           & 76       & a/b & 1UBI    & 17769     & 1-70          & 3.8
     \end{tabular}
     \begin{tablenotes}
     \item[a] Using automatically assigned data obtained from Kaare Theilum (personal communitcation - see \url{https://github.com/andersx/cs-proteins}).
@@ -93,7 +109,7 @@ Ubiquitin           & 76       & a/b & 1UBI    & 17769     & 1-70          & ?
 
 \section{Folding of larger proteins (\textgreater 100 AA)}
 
-It is worth to note, that using sparse NMR data, only three structures \textgreater 200 residues have been determined: Alg13 (201 AA), Rhodopsin (225 AA) and MBP (376 AA) using the Rosetta program with the "resolution-adapted structural recombination" (RASREC) protocol
+This section presents folding results on a set of larger proteins (\textgreater 100 AA) with known structures. It is worth to note, that using sparse NMR data, only three structures \textgreater 200 residues have been determined: Alg13 (201 AA), Rhodopsin (225 AA) and MBP (376 AA) using the Rosetta program with the "resolution-adapted structural recombination" (RASREC) protocol
 
 Alg13 was solved using backbone chemical shifts only 52 NOE, to an CA-RMSD of 4 \AA~to the experimental NMR structure (2jzc).
 Rhodopsin was folded to an CA-RMSD of 1.6 \AA~to the X-ray structure using 215 NOE restraints, backbone chemical shifts chemical shifts and RDCs.
@@ -104,9 +120,9 @@ An attempt to use only automatically assigned NOEs yielded 455 restraints, which
 The N-terminal domain was converged to 2.7 \AA, but the C-terminal domain and the angle between the two domains was incorrectly folded.
 
 \subsection{Folding protocol}
-This section presents folding results on a set of larger proteins (\textgreater 100 AA) with known structures.
+The folding protocols used in the following was a two stage simulation. First folding, then refinement.
 
-The protocol which folded Rhodopsin and Prolactin can be executed from PHAISTOS via the following commands. The third refinement stage is the same as the initial folding stage, only with 5,000,000 iterations and 8 threads.
+
 
 \subsubsection{Initial folding stage:}
 \begin{lstlisting}
@@ -137,7 +153,10 @@ The protocol which folded Rhodopsin and Prolactin can be executed from PHAISTOS 
   --move-sidechain-uniform-weight 0.5
 \end{lstlisting}
 
-\subsubsection{Relaxation stage:}
+\subsubsection{Refinement protocol:}
+
+The 
+
 \begin{lstlisting}
 ./phaistos --pdb-file rhodopsin_lowest_energy1.pdb \
   --init-from-pdb 1 \
@@ -162,19 +181,6 @@ The protocol which folded Rhodopsin and Prolactin can be executed from PHAISTOS 
 
 \subsection{Rhodopsin (225 residues)}
 
-Since the ILV(W) data set used by Rosetta was not available, simulated ILV restraints from the PDB structure 1h68 was used instead.
-A very conservative simulation of only 63 synthetic NOE restraints was used, which corresponds to around 4\% assigned long-range contacts. The initial folding stage converged to around 6.8 as the lowest energy cluster - see Fig.~\ref{fig:rhodopsin}). Two threads out of 72 converged to this native-like cluster.
-
-The refinement stage with only 63 NOEs, however, did not converge to a lower CA-RMSD.
-The Rosetta data set includes 213 contacts, and a similar, less conservative synthetic NOE data was simulated from the PDB structure 1h68, in order to see, if an increased number of NOE restraints could drive the RMSD down.
- This resulted in 195 NOE restraints, which corresponds to 13\% assigned NOEs.
-Using this, larger, set of restraints during the refinements gave a substantial decrease in CA-RMSD for the lowest energy sample to 3.6 \AA.
-
-It must be noted, however, that in both the folding and refinment stages, samples are obtained with less than 2650 kcal/mol (calculated as the Profasi force field energy plus the likelihood from Torus-DBN-CS given the experimental chemical shifts), while the native energy is 2730 kcal/mol.
-This discrepancy is likely due the lack of accurate non-local information in the Profasi and Torus-DBN-CS models.
-
-Further refinement was attempted with the CamShift energy-term instead of the Torus-DBN-CS model, but was found to be too slow to be practically feasible.
-
 \begin{figure}%
     \centering
     \subfloat[Energy-scoring during folding stage.]{
@@ -183,17 +189,17 @@ Further refinement was attempted with the CamShift energy-term instead of the To
     \subfloat[Energy-scoring during refinement stage.]{
         {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement_data.pdf}}
     }\\
-    \subfloat[Bottom view of folding stage lowest energy sample (blue).]{
-        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/folding_bottom.pdf}}
-    }\quad
-    \subfloat[Bottom view of refinement stage lowest energy sample (red).]{
-        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement_bottom.pdf}}
-    }\\
-    \subfloat[Side view of folding stage lowest energy sample (blue).]{
+%    \subfloat[Bottom view of folding stage lowest energy sample (blue).]{
+%        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/folding_bottom.pdf}}
+%    }\quad
+%    \subfloat[Bottom view of refinement stage lowest energy sample (red).]{
+%        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement_bottom.pdf}}
+%    }\\
+    \subfloat[Folding stage lowest energy sample (blue). 7.8 \AA~CA-RMSD.]{
         {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/folding.pdf}}
     }\quad
-    \subfloat[Side view of refinement stage lowest energy sample (red).]{
-        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/refinement.pdf}}
+    \subfloat[Refinement stage lowest energy sample (blue). 2.5 \AA~CA-RMSD. ]{
+        {\includegraphics[width=0.4\textwidth]{figures/rhodopsin_figures/lowest_e.pdf}}
     }\\
     \caption{Some caption}
     \label{fig:rhodopsin}%
@@ -224,7 +230,77 @@ Rhodopsin           & 219      & B      & 2KSY    & 16678     & All             
     \label{tab:folding_large}
 \end{table}
 
+Since the ILV(W) data set used by Rosetta was not available, simulated ILV restraints from the PDB structure 1h68 was used instead.
+A very conservative simulation of only 63 synthetic NOE restraints was used, which corresponds to around 4\% assigned long-range contacts. The initial folding stage converged to around 6.8 as the lowest energy cluster - see Fig.~\ref{fig:rhodopsin}). Two threads out of 72 converged to this native-like cluster.
+
+The refinement stage with only 63 NOEs, however, did not converge to a lower CA-RMSD.
+The Rosetta data set includes 213 contacts, and a similar, less conservative synthetic NOE data was simulated from the PDB structure 1h68, in order to see, if an increased number of NOE restraints could drive the RMSD down.
+ This resulted in 195 NOE restraints, which corresponds to 13\% assigned NOEs.
+Using this, larger, set of restraints during the refinements gave a substantial decrease in CA-RMSD for the lowest energy sample to 3.6 \AA.
+
+It must be noted, however, that in both the folding and refinment stages, samples are obtained with less than 2650 kcal/mol (calculated as the Profasi force field energy plus the likelihood from Torus-DBN-CS given the experimental chemical shifts), while the native energy is 2730 kcal/mol.
+This discrepancy is likely due the lack of accurate non-local information in the Profasi and Torus-DBN-CS models.
+
+Further refinement was attempted with the CamShift energy-term instead of the Torus-DBN-CS model, but was found to be too slow to be practically feasible.
 
 
 
+
+
+\section{Evolutionary distance constraints}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/evo_constraint.pdf}
+    \caption{Evolutionary constraints}
+    \label{fig:evo_constraint}
+\end{figure}
+
+As discussed previously, it is increasingly difficult to obtain sufficient distance restraints as the size of the protein increases.
+A recently developed methodology uses sequence analysis to infer residue contacts in 3D space. 
+
+In brief, the method works by identifying sequence co-variation, which retains favorable contacts between residues.
+This way, pair of residues which are probable to be close in 3D space can be identified.
+The procedure is briefly summarized in Fig.~\ref{fig:evo_constraint}.
+
+In this proof-of-concept study, 270 contacts were obtained a multiple-sequence alignment using the EVfold program (Wouter Boomsma, personal communications) for the 269 residue protein Savinase.
+The restraints were simply treated as NOE restraints using existing code.
+A similar simulation to that which folded Rhodopsin was adopted. 
+In terms of computational resources, these were increased to 100 threads and $75 \times 10^6$ iterations, compared to only 72 threads and $50 \times 10^6$ iterations for the Rhodopsin simulation.
+One thread identified a native-like structure.
+
+The folding simulation yielded a lowest energy 
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.60\textwidth]{figures/savinase_fold/savinase_lowest_e.pdf}
+%     \caption{The lowest energy structure of Savinase after the refinement (green) and the 
+%              1SVN crystal structure (grey). The CA-RMSD is 2.9 \AA.}
+%     \label{fig:savinase_align}
+% \end{figure}
+
+
+
+\begin{figure}%
+    \centering
+    \subfloat[Lowest RMSD sample]{
+        \includegraphics[width=0.40\textwidth]{figures/savinase_fold/savinase_lowest_e.pdf}
+        %{\includegraphics[width=0.42\textwidth]{sigma_prior.pdf} }
+    }
+    \subfloat[Lowest energy sample]{
+        \includegraphics[width=0.60\textwidth]{figures/savinase_fold/savinase_refinement.pdf}
+    }
+    \caption{Refinement stage of the savinase simulation. The lowest energy sample has a CA-RMSD of 2.9 \AA. }
+    \label{fig:savinase_fold}%
+\end{figure}
+
+
+% 
+% \begin{figure}
+%     \centering
+%     \caption{Savinase folded}
+%     \label{fig:savinase_align}
+% \end{figure}
+% 
 

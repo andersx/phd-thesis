@@ -1,4 +1,15 @@
-\chapter{Evolutionary distance constraints}
+\chapter{Other energy terms also considered}
+
+In this section, our attempts to fold struc
+
+\section{Evolutionary distance constraints}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/evo_constraint.pdf}
+    \caption{Evolutionary constraints}
+    \label{fig:evo_constraint}
+\end{figure}
 
 As discussed previously, it is increasingly difficult to obtain sufficient distance restraints as the size of the protein increases.
 A recently developed methodology uses sequence analysis to infer residue contacts in 3D space. 
@@ -7,22 +18,33 @@ In brief, the method works by identifying sequence co-variation, which retains f
 This way, pair of residues which are probable to be close in 3D space can be identified.
 The procedure is briefly summarized in Fig.~\ref{fig:evo_constraint}.
 
-In this proof-of-concept study, 270 contacts were obtained from Wouter Boomsma (personal communications) for the 269 residue protein Savinase.
+In this proof-of-concept study, 270 contacts were obtained a multiple-sequence alignment using the EVfold program (Wouter Boomsma, personal communications) for the 269 residue protein Savinase.
 The restraints were simply treated as NOE restraints using existing code.
 A similar simulation to that which folded Rhodopsin was adopted. 
-In terms of computational resources, these were increased to 100 threads and $75 \time 10^6$ iterations, compared to only 72 threads and $50 \time 10^6$ iterations for the Rhodopsin simulation.
+In terms of computational resources, these were increased to 100 threads and $75 \times 10^6$ iterations, compared to only 72 threads and $50 \times 10^6$ iterations for the Rhodopsin simulation.
 One thread identified a native-like structure.
+
+The folding simulation yielded a lowest energy 
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.60\textwidth]{figures/savinase_fold/savinase_lowest_e.pdf}
+%     \caption{The lowest energy structure of Savinase after the refinement (green) and the 
+%              1SVN crystal structure (grey). The CA-RMSD is 2.9 \AA.}
+%     \label{fig:savinase_align}
+% \end{figure}
 
 
 
 \begin{figure}%
     \centering
     \subfloat[Lowest RMSD sample]{
-        \includegraphics[width=0.49\textwidth]{figures/savinase_low_e.pdf}
+        \includegraphics[width=0.40\textwidth]{figures/savinase_fold/savinase_lowest_e.pdf}
         %{\includegraphics[width=0.42\textwidth]{sigma_prior.pdf} }
     }
     \subfloat[Lowest energy sample]{
-        \includegraphics[width=0.49\textwidth]{figures/savinase_low_rmsd.pdf}
+        \includegraphics[width=0.60\textwidth]{figures/savinase_fold/savinase_refinement.pdf}
     }
     \caption{Sampling of $\sigma$ and $\gamma$ for 2OED for Ca-chemical shifts. $n = 55$ and $\chi^2 = 69.7$.}
     \label{fig:savinase_fold}%
@@ -36,23 +58,7 @@ One thread identified a native-like structure.
 %     \label{fig:savinase_align}
 % \end{figure}
 % 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.45\textwidth]{figures/savinase_low_rmsd.pdf}
-%     \caption{Savinase folded}
-%     \label{fig:savinase_align}
-% \end{figure}
-% 
 
-
-
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/evo_constraint.pdf}
-    \caption{Evolutionary constraints}
-    \label{fig:evo_constraint}
-\end{figure}
 
 
 %Distance constraints from evolutionary sequence comparison
