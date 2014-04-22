@@ -4,26 +4,26 @@ While the relationship between NOE restraints and the underlying protein structu
 the relationship between chemical shifts and the structure is less clear.
 Several programs, however, exists which are able to predict protein chemical shifts given a protein structure.
 Typically, these chemical shift predictors are parametrized from empirical fits between experimental crystal structures of proteins to their corresponding measured NMR chemical shifts.
-Popular programs that employ such empirical include SHIFTX, SPARTA+, SHIFTS and CamShift.
+Popular programs that employ such empirical include SHIFTX, SPARTA+, SHIFTS and CamShift\cite{SHIFTX,SPARTAPLUS,Osapay1991,CamShift}.
+The programs use functional forms that decompose the chemical shift into additive, independent terms.
+A similar program, CheShift, exists, in which the functional forms are interpolated from a large database of quantum mechanical (QM) calculation on representative peptide conformations \cite{CheShift2}.
+The authors, however, have not been willing to share the code, but exists as a web-service which allow aplha-carbon and beta-carbon chemical shift calculations.
 
 We have recently explored using quantum mechanics to derive chemical shifts from protein structures. Our amide-proton chemical shift predictor is discussed in our paper \#3 in Appendix A.
 %, titled \textit{"Protein Structure Validation and Refinement Using Amide Proton Chemical Shifts Derived from Quantum Mechanics"}.
-Briefly, in the amide proton-only version of ProCS, the chemical shift is calculated as a sum of several independent terms:
+Briefly, in the amide proton-only version of ProCS\cite{ProCS}, the chemical shift is calculated as a sum of several independent terms\cite{Parker}:
 
 \begin{equation}
     \delta_\mathrm{H} = \delta_\mathrm{BB}(\phi,\psi) + \Delta\delta_\mathrm{HB} + \Delta\delta_\mathrm{rc}
 \end{equation}
-where $\delta_\mathrm{BB}(\phi,\psi)$ chemical shift dependence on the backbone angles, $\Delta\delta_\mathrm{HB}$ is a sum over 3 different contributions due to hydrogen bonding and $\Delta\delta_\mathrm{rc}$ is the perturbation due to magnetic field from aromatic side chains.
-All terms are parametrized by QM methods.
-In this approach, the chemical shift is decomposed into a series of independent terms, which
-
+where $\delta_\mathrm{BB}(\phi,\psi)$ chemical shift dependence on the backbone angles, $\Delta\delta_\mathrm{HB}$ is a sum over 3 different contributions due to hydrogen bonding and $\Delta\delta_\mathrm{rc}$ is the perturbation due to magnetic field from aromatic side chains\cite{Christensen2011}.
+All terms are parametrized by QM methods. The ring current contribution term is discussed in detail in publication \# in the appendix.
 
 As we show in the publication, structures generated using amide-proton chemical shift restraints from ProCS have hydrogen bonding geometries that are in substantially better agreement with experimental X-ray structures and back-calculated experimentally measured spin-spin coupling constants, compared to using CamShift as predictor or no chemical shifts in the simulation.
 The accuracy of the amide proton-only version of ProCS is lower than SHIFTX, SPARTA+, SHIFTS or CamShift, when experimental protein structures are used as input, but we show that this is likely due to inaccuracies in the experimental coordinates.% as ProCS is able to refine hydrogen bonds, while CamShift is not.
 
-Similarly to the approximation above, we have made a predictor for all backbone and beta-carbon.
+Similar to the approximation above, we have made a predictor for all backbone and beta-carbon.
 In the backbone atom version of ProCS, the chemical shift is calculated as:
-
 \begin{equation}
     \delta = \delta_\mathrm{BB} + \Delta\delta_\mathrm{HB} + \Delta\delta_\mathrm{rc}
 \end{equation}
@@ -34,19 +34,19 @@ To accurately calculate the dependence of angles and neighboring residues on car
     + \Delta\delta_{i-1}(\phi_{i-1},\psi_{i-1}, \{\chi_{i-1}\})
     + \Delta\delta_{i+1}(\phi_{i+1},\psi_{i+1}, \{\chi_{i+1}\}),
 \end{equation}
-where $\delta_{i}$ takes into account, the chemical shift due to the $\phi_i,\psi_i$ and $\{\chi_i\}$ angles on the $i$'th residue, and $\Delta\delta_{i-1}$ and $\Delta\delta_{i+1}$ takes into account the perturbation due to the neighboring conformation (and residue type).
+where $\delta_{i}$ takes into account, the chemical shift due to the $\phi_i,\psi_i$ and $\{\chi_i\}$ angles on the $i$'th residue, and $\Delta\delta_{i-1}$ and $\Delta\delta_{i+1}$ takes into account the perturbation due to the neighboring residue conformation and residue type.
 
 The three terms in $\delta_\mathrm{BB}$ are interpolated through exhaustive scans over all possible conformations of tri-peptides
 .
 To set up the massive number of QM calculations, the FragBuilder Python API was created (see Paper \#4).
 FragBuilder is an API that makes it possible to generate peptide conformations, either via manual definition of dihedral angles or sampling via the BASILISK library. 
-Using the OpenBabel Python API, it is furthermore possible to perform molecular mechanics optimizations and write coordinate files in nearly 100 different formats.
+Using the OpenBabel Python API \cite{Babel}, it is furthermore possible to perform molecular mechanics optimizations and write coordinate files in nearly 100 different formats.
 FragBuilder provides convenient wrappers and classes for such operations, and only few lines of code are generally needed for generating an input-file.
 
 
 The FragBuilder Python API was used to generate the more than 2,000,000 peptide structures used to generate the database.
 The peptide structures were optimized using the PM6 semi-empirical QM method, and QM chemical shifts were calculated at the OPBE/6-31G(d,p) level using a polarizable continuum model to model an embedding environment.
-The resulting tables of chemical shifts were collected and stored in files in Numpy's binary .npz-format. [REF XX]
+The resulting tables of chemical shifts were collected and stored in files in Numpy's binary .npz-format\cite{numpy}.
 
 The predictor is programmed into a separate module for PHAISTOS (in C++).
 The program loads the Numpy-arrays into the memory and uses existing code to read coordinates and angles.
@@ -60,10 +60,10 @@ Initial test show that calculating chemical shifts via the ProCS module is about
 Note, that the CamShift and PROFASI energy terms use a caching algorithm which effectively means that only terms that depend on atoms that are move during a Monte Carlo move have to be re-calculated each move.
 An initial cached version of ProCS is around 5 times faster than the non-cached version.
 
-We have assessed the accuracy of ProCS for alpha-carbon and beta-carbon atoms by comparison to benchmark QM calculations on an entire protein.
-The experimental structures of Protein G and Ubiquitin (PDB-codes: 2OED and 1UBQ, respectively) were protonated using the PDB2PQR webinterface.
+We have assessed the accuracy of ProCS for alpha-carbon and beta-carbon atoms by comparison to benchmark QM calculations on an entire proteins.
+The experimental structures of Protein G and Ubiquitin (PDB-codes: 2OED and 1UBQ, respectively) were protonated using the PDB2PQR webinterface\cite{pdb2pqr1,pdb2pqr2}.
 Additional structures were generated by minimizing the X-ray structures in Tinker with the AMBER, CHARMM22/CMAP and AMOEBAPRO force fields with a GB/SA solvent model.
-The chemical shifts of the resulting structures were calculated in GAUSSIAN 09 at the OPBE/6-31G(d,p) level with a polarizable continuum solvent model. The results are summarized in table \ref{tab:procs_results}.
+The chemical shifts of the resulting structures were calculated in GAUSSIAN 09 \cite{g09} at the OPBE/6-31G(d,p) level with a polarizable continuum solvent model. The results are summarized in table \ref{tab:procs_results}.
 
 The QM calculations on Ubiquitin are in slightly better agreement with the ProCS predicted number, than the CheShift and CamShift predicted values, based on RMSD and $r^2$ values. For Protein G CheShift are and CamShift RMSD values are slightly lower for alpha-carbon, while ProCS has a lower RMSD for beta-carbon.
 The general trend is that the predictors are comparable in accuracy.
@@ -102,9 +102,9 @@ AMBER          & 0.974  & 2.91  &  0.982   &2.63  &  0.982   &2.63\\
 CHARMM22/CMAP  & 0.991  & 2.68  &  0.979   &4.95  &  0.985   &3.08\\
 AMOEBA         & 0.984  & 3.83  &  0.977   &6.29  &  0.977   &4.06\\
     \end{tabular}
-    \begin{tablenotes}
-        \item[a] Itamz\\
-    \end{tablenotes}
+%    \begin{tablenotes}
+%        \item[a] Itamz\\
+%    \end{tablenotes}
     \end{threeparttable}
     \end{center}
     \label{tab:procs_results}

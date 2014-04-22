@@ -1,7 +1,8 @@
 \chapter{Introduction to PHAISTOS}
 
-This section servers as an introduction to the PHAISTOS program, and a (very) brief introduction to the theory behind PHAISTOS.
+This section servers as an introduction to the PHAISTOS program, and a (very) brief introduction to the theory behind PHAISTOS\cite{Phaistos}. 
 This will give the relevant background to read the next chapters.
+PHAISTOS is also published and discussed in detail in paper \#2 in this the appendix.
 
 \section{Markov Chain Monte Carlo}
 
@@ -15,7 +16,7 @@ where $k_\mathrm{B}T$ is Boltzmann's constant and $Z(T)$ is the partition functi
 
 In Markov chain Monte Carlo the target distribution obtained by repeatedly proposing updates to the current state, and accepting or rejecting these updates with a certain acceptance probability.
 
-It can be shown, that in for the infinitely sampled distribution  to converge to the target distribution, i.e.~ $p_\infty(\mathbf X) = p(\mathbf X)$, the Monte Carlo moves that are used to propose updates satisfy the principle of detailed balance.
+It can be shown, that for an infinitely sampled distribution to converge to the correct target distribution, i.e.~$p_\infty(\mathbf X) = p(\mathbf X)$, the Monte Carlo moves that are used to propose updates must satisfy the principle of detailed balance.
 That is, the transition from the current state $\mathbf{X}$ to the proposed new state $\mathbf{X'}$ fulfills:
 \begin{equation}
     \label{eq:detailed_balance}
@@ -34,7 +35,7 @@ If we further factorize $p(\mathbf{X} \rightarrow \mathbf{X'})$ into an acceptan
          {p_m(\mathbf{X} \rightarrow \mathbf{X'})}
 \end{equation}
 Most of the moves in PHAISTOS are symmetric, that is the move bias ratio $p_m(\mathbf{X'} \rightarrow \mathbf{X}) / p_m(\mathbf{X} \rightarrow \mathbf{X'}) = 1$, but for some moves this is not true. 
-These moves can be exploited to vastly speed up convergence or bias the simulation, and are discussed later in Section \ref{chap:generative}.
+These biased moves can be exploited to vastly speed up convergence or bias the simulation, and are discussed later in Section \ref{chap:generative}.
 
 \subsection{Metropolis-Hastings}
 The simplest Monte Carlo method that satisfies Eqn.~\ref{eq:unbiased_mc} is the Metropolis-Hastings method.
@@ -47,14 +48,14 @@ Here a transition $\mathbf{X} \rightarrow \mathbf{X'}$ is accepted using the Met
     \frac{p_m(\mathbf{X'} \rightarrow \mathbf{X})}
          {p_m(\mathbf{X} \rightarrow \mathbf{X'})} \right)
 \end{equation}
-Note how the term $1/Z(T)$ term from Eqn.~\ref{eq:boltzmann} cancels out.
+%Note how the term $1/Z(T)$ term from Eqn.~\ref{eq:boltzmann} cancels out.
 Evaluation of the partition function is thus not necessary.
 The Metropolis-Hastings method is efficient when exploring native states, and simulations near the critical temperature.
 Unfortunately the Metropolis-Hastings method, compared to other MC methods, often gets stuck in local minima, and is therefore generally inefficient when simulating protein folding from an extended strand.
 
 \subsection{Generalized Ensembles}
-To avoid the slow convergence problem more advanced MC methods are available in PHAISTOS, which emphasize sampling at low energies, which is generally of higher interest in protein structure determination.
-These "generalized ensemble" methods are very similar to the Metropolis-Hastings methods, and the main difference in the acceptance criterion is that the target distribution $p(\mathbf{X})$ has been replace by a generalized weight function $w(\mathbf{X})$. 
+To avoid the slow convergence problem advanced MC methods are available in PHAISTOS, which emphasize sampling at low energies, which is generally of higher interest in protein structure determination.
+These "generalized ensemble" methods are very similar to the Metropolis-Hastings method, and the main difference in the acceptance criterion is that the target distribution $p(\mathbf{X})$ has been replace by a generalized weight function $w(\mathbf{X})$. 
 The acceptance criterion then becomes:
 \begin{equation}
     \label{eq:mc_gh}
@@ -67,7 +68,7 @@ The acceptance criterion then becomes:
 Through reweighting, samples from a converged simulation in a generalized ensemble can be reweighted to correspond to the Boltzmann distribution at a given temperature.
 
 PHAISTOS offer two generalized ensemble methods.
-In the multicanonical ensemble method, the weight function is $w_\textit{muca}(\mathbf{X}) = 1/g(E(\mathbf{X}))$, where $E(\mathbf{X})$ is the energy of the structure $\mathbf{X}$ and $g$ is the associated density of states.
+In the multicanonical ensemble method, the weight function is $w_\mathrm{muca}(\mathbf{X}) = 1/g(E(\mathbf{X}))$, where $E(\mathbf{X})$ is the energy of the structure $\mathbf{X}$ and $g$ is the associated density of states.
 In the inverse-$k$ ensemble, the weight function is given by $w_\textit{1/k}(\mathbf{X}) = 1/k(E(\mathbf{X}))$ where $k(E(\mathbf{X})) = \int_{-\infty}^{E(\mathbf{X})} g(E') dE'$.
 The since the density of states is generally unknown, the weight-function is estimated during the simulation.
 PHAISTOS uses the MUNINN library to collect histograms of the energy and efficiently provide an estimate of $w(\mathbf{X})$ on-the-fly.
@@ -77,22 +78,22 @@ PHAISTOS uses the MUNINN library to collect histograms of the energy and efficie
 \label{chap:generative}
 PHAISTOS proposes new structure samples using a weighted set of difference MC moves, which each randomly changes the current protein structure in a certain way. Briefly, these are divided in side chain moves and backbone moves.
 Side chain moves update the rotamer-conformation of a amino-acid single side chain by rotating the dihedral angles on the side chain.
-Backbone moves either perform a local perturbation to a strand of a only a few amino acids, or rotates a dihedral angle on the backbone.
+Backbone moves either perform a local perturbation to a strand of a only a few amino acids, or rotates one dihedral angle on the backbone.
 \\\\Using random moves which re-sample angles from a uniform distribution, and then constructing a target distribution via an acceptance criterion is a perfectly valid strategy.
 However, sampling from a uniform distribution usually lead to slow convergence.
 A common approach to alleviate this problem is using fragment assembly, in which small fragments of peptides are assembled from a library of common fragment motifs, such as beta-strands, helices and loops.
-This approach, however, introduces a bias in the selection probability $P_s$, which must be divided out if the simulation has to obey detailed balance.
+This approach, however, introduces a move bias, which must be divided out if the simulation has to obey detailed balance.
 Furthermore, it is not clear, how to evaluate the move bias ratio $p_m(\mathbf{X'} \rightarrow \mathbf{X}) / p_m(\mathbf{X} \rightarrow \mathbf{X'})$ when sampling from a fragment library.
 
 A related approach to obtain a similar speed up is biased sampling.
 PHAISTOS supports sampling of both side chain and backbone angles from such generative probabilistic models.
 In this approach, angles are sampled from distributions that are conditioned on prior knowledge.
 Two all-atom generative probabilistic models are supported in PHAISTOS.
-TorusDBN which is a hidden-Markov model of backbone angles, and BASILISK which is a similar model of side chain rotamer-conformations.
+TorusDBN which is a hidden-Markov model of backbone angles\cite{Torus08}, and BASILISK\cite{BASILISK} which is a similar model of side chain rotamer-conformations.
 Both work are continuous models in torsion-angle space.
-The model that is used in this work is TorusDBN, which is is a model that samples backbone dihedral angles conditioned on the amino acid sequence.
+The model that is used in this work is TorusDBN, which is is a model that samples backbone dihedral angles conditioned on the amino acid sequence from a distribution that resembles the Ramachandran-plot.
 This effectively speeds up convergence of sampling, since uninteresting parts of conformational space in only sampled very rarely.
-The importance of the TorusDBN model is discussed in chapter [RESULTS XX].
+The importance of the TorusDBN model is discussed in chapter \ref{chapter:results}.
 
 Using models such as TorusDBN and BASILISK introduces a move bias, which compensated for in Eqn.~\ref{eq:unbiased_mc} by multiplying by the ratio $p_m(\mathbf{X'}     \rightarrow \mathbf{X}) / p_m(\mathbf{X} \rightarrow \mathbf{X'})$.
 It is possible to determine this ration, because the likelihood of sampled values can be calculated in the TorusDBN model.
@@ -131,8 +132,8 @@ TorusDBN, however, manages to rule out left-handed helices, but has a higher sam
 
 The last residue in the examples, residue 60 (aspargine), is located in a loop-region with backbone angles that correspond to a left-handed helix.
 Both models sample in the correct region, but TorusDBN favor a regular alpha-helix.
-While TorusDBN-CS heavily favors the correct region, angles that are usually not favored in the Ramachandran plot are also frequently sampled.
-This is presumably due to less fold-diversity in the training set, compared to the set used to train TorusDBN.
+While TorusDBN-CS heavily favors the correct region, angles that are usually not favored in the Ramachandran plot are also frequently sampled in this particular case.
+This is presumably due to less fold-diversity in the training set, compared to the set used to train TorusDBN. Generally, however, the TorusDBN-CS distribution is more restrictive than standard TorusDBN.
 
 \begin{figure}
     \centering
@@ -142,13 +143,13 @@ This is presumably due to less fold-diversity in the training set, compared to t
 \end{figure}
 
 
-\section{Note on protein Folding}
-While converged sampling of the potential energy surface will corresponds to the Boltzmann distribution, and the native folded state of the protein will usually correspond to the largest populated cluster of samples.
-
-However, due to practical limits on computational resources, it is generally impossible to perform converged sampling of the potential energy surface.
-Protein folding simulations from an extended strand will often be very far from convergence.
-
-An often used strategy is to determine a structure by selecting the structure with the lowest energy throughout a simulation.
-This obviously neglects entropic effect which may be very important in certain cases, but in practice this has shown to be a very efficient strategy to determine structures close to those obtained experimentally. [REF XX]
-
+% \section{Note on protein Folding}
+% While converged sampling of the potential energy surface will corresponds to the Boltzmann distribution, and the native folded state of the protein will usually correspond to the largest populated cluster of samples.
+% 
+% However, due to practical limits on computational resources, it is generally impossible to perform converged sampling of the potential energy surface.
+% Protein folding simulations from an extended strand will often be very far from convergence.
+% 
+% An often used strategy is to determine a structure by selecting the structure with the lowest energy throughout a simulation.
+% This obviously neglects entropic effect which may be very important in certain cases, but in practice this has shown to be a very efficient strategy to determine structures close to those obtained experimentally. [REF XX]
+% 
 
