@@ -18,3 +18,10 @@ draft:
 	${BIBTEX} ${THESIS}.aux
 	${LATEX} -draftmode ${THESIS}.tex
 	${LATEX} -draftmode ${THESIS}.tex
+
+
+quick:
+	${LATEX}  ${THESIS}.tex
+	${BIBTEX} ${THESIS}.aux
+	${LATEX}  ${THESIS}.tex
+	${LATEX}  ${THESIS}.tex
