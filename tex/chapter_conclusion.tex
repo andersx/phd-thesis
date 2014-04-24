@@ -1,13 +1,13 @@
 \chapter{Conclusion and Outlook}
 
 During the project described in this thesis and the attached papers, I have implemented a method to determine the structure of several small proteins using their experimental chemical shifts.
-The structure of the CI-2 protein was solved in using only computer resources that are available in any lab, with only chemical shift data that was automatically recorded and assigned.
+The structure of the CI-2 protein was solved rapidly, using only computer resources that are available in any lab, with only chemical shift data that was automatically recorded and assigned.
 
 Lastly, I have attempted to fold several protein structures around 200 amino acids.
 Out of 8 proteins greater than 100 residues, a good structure was located in four cases, out of which two were larger than 200 residues.
 The last four likely failed due to inefficient use of the NOE restraints.
-Since the existing code to handle NOE restraints in PHAISTOS did not perform well on large structures, I implemented a new NOE energy term, and this was used to fold the Rhodopsin structure (225 amino acids) to a CA-RMSD of 2.5 \AA~from the experimental X-ray structure using a set only 195 NOE data restraints and assigned backbone chemical shifts.
-The same code was able to fold the Savinase structure to a CA-RMSD of 2.9 \AA~from the experimental X-ray structure using only distance restraints derived from evolutionary data and assigned chemical shifts.
+Since the existing code to handle NOE restraints in PHAISTOS did not perform well on large structures, I implemented a new NOE energy term, and this was used to fold the Rhodopsin structure (225 amino acids) to a CA-RMSD of 2.5 \AA~from the experimental X-ray structure using a set only 195 NOE restraints and assigned backbone chemical shifts, NMR data which had been assigned through automated processes.
+The same code was able to fold the Savinase structure (269 amino acids) to a CA-RMSD of 2.9 \AA~from the experimental X-ray structure using only distance restraints derived from evolutionary data and assigned chemical shifts.
 
 This required implementing a version of CamShift, from scratch, in PHAISTOS, and implemented useful energy function rigorously founded in Bayesian statistics.
 To aid the setup of calculations, a graphical user interface for PHAISTOS was created.
@@ -15,10 +15,10 @@ I have parametrized and implemented a version of ProCS to calculate amide proton
 Furthermore, I have parametrized parts of the backbone atom ProCS chemical shift predictor and implemented this in a PHAISTOS module.
 This required the implementation of FragBuilder Python API which was used to automatically setup, run, and collect data from more than 2,000,000 QM calculations.
 
-The speed of the cached version of the backbone atom ProCS chemical shift predictor will allow an energy function based on chemical shifts to be included in simulations on proteins > 200 residues. Based on results obtained on the ENHD, Protein G and CI-2 proteins, this which will dramatically increase the accuracy of the energy function.
+The speed of the cached version of the backbone atom ProCS chemical shift predictor will allow an energy function based on chemical shifts to be included in simulations on proteins $>200$ residues. Based on results obtained on the ENHD, Protein G and CI-2 proteins, this will dramatically increase the accuracy of the energy functions that can be used to determine protein structures.
 
 A newly developed NOE energy function shows encouraging results on folding of large structures, and further development of this module is promising.
 
 
 In conclusion, I have demonstrated, that chemical shifts and sparse NOE data can, in some cases, be used with higher computational efficiency in PHAISTOS, than any other competing method. I have determined a protein structure in less than two days using automatically collected chemical shift data with computational resource available to any lab.
-Lastly, I have folded some of the larges protein structures ever folded using similar approaches, while using only modest amount computational resources.
+Lastly, I have folded some of the larges protein structures ever folded using similar approaches, while using only modest amount computational resources, compared to current \textit{state-of-the-art} methods.

@@ -1,7 +1,7 @@
 \chapter{Determined protein structures}
 \label{chapter:results}
 This section describes all test-targets which I have attempted to fold using the methodologies presented in the previous chapters.
-All protein structures, chemical shift and NOE data used in this thesis is available from \url{http://github.com/andersx/cs-proteins/}.
+All protein structures, chemical shift and NOE data used in this thesis is available from \url{https://github.com/andersx/cs-proteins}.
 
 
 \section{Barley Chymotrypsin Inhibitor II}
@@ -16,7 +16,11 @@ As we demonstrate, a structure could be determined computationally from these ch
 
 
 \subsection{Computational methodology}
-Several folding protocols were tried for this protein. All runs were performed as 72 independent trajectories which ran for 50 mio MC steps (iterations). Sampling was carried out using either TorusDBN or TorusDBN-CS to bias the backbone moves and the PROFASI force field was used in all simulations. Three simulations used an energy function based on CamShift using a cauchy distribution with variable $\gamma$ value as energy function. Additionally, three simulations used a potential on the radius of gyration to restrict the sampling to only compact structures. 
+Several folding protocols were tried for this protein. All runs were performed as 72 independent trajectories which ran for 50 mio MC steps (iterations).
+Sampling was carried out using either TorusDBN or TorusDBN-CS to bias the backbone moves and the PROFASI force field was used in all simulations.
+One simulations used an experimental version of TorusDBN-CS, supplied by Lars Bratholm, which was trained on only high-resolution X-ray structures (available from \url{https://github.com/andersx/cs-proteins}).
+Three simulations used an energy function based on CamShift using a cauchy distribution with variable $\gamma$-weight as energy function.
+Additionally, three simulations used a potential on the radius of gyration to restrict the sampling to only compact structures \cite{Phaistos_oldest}.
 Sampling was performed in the multicanonical ensemble with a thermodynamic beta-range from 0.6 to 1.1, corresponding to a temperature range of 272K to 500K. The MC move set was comprised of 40\% CRISP moves, 10\% pivot moves and 50\% uniform side chain moves.
 
 
@@ -26,18 +30,18 @@ Sampling was performed in the multicanonical ensemble with a thermodynamic beta-
     \begin{threeparttable}
     \begin{tabular}{l l l l l l}
         Sampling        & Force Field   & CS Energy         & Correct fold\tnote{a} & Iterations/day\tnote{b}\\\hline
-          TORUS-CS + PP\tnote{c} & PROFASI       & CamShift          & 13            & $10 \times 10^6$ \\
+          TORUS-CS + RG\tnote{c} & PROFASI       & CamShift          & 13            & $10 \times 10^6$ \\
           TORUS-CS      & PROFASI       & CamShift          & 15            & $11 \times 10^6$\\
           TORUS         & PROFASI       & CamShift          & 0             & $11 \times 10^6$\\
  TORUS-CS + PP\tnote{c} & PROFASI       & None              & 4\tnote{d}      & $49 \times 10^6$\\
- TORUS-CS\tnote{e}+ PP\tnote{c} & PROFASI      & None              & 0             & $49 \times 10^6$\\
+ TORUS-CS\tnote{e}+ RG\tnote{c} & PROFASI      & None              & 0             & $49 \times 10^6$\\
           TORUS-CS      & PROFASI       & None              & 0             & $49 \times 10^6$\\
           TORUS         & PROFASI       & None              & 0             & $49 \times 10^6$\\
     \end{tabular}
     \begin{tablenotes}
         \item[a] Number of threads with a CA-RMSD of $<5$ \AA\ (using all residues).\\
-        \item[b] Numbers are \textit{per} thread.
-        \item[c] PP denote the use of an additional radius of gyration potential\cite{Phaistos_oldest}.\\
+        \item[b] Numbers are \textit{per} thread.\\
+        \item[c] RG denote the use of an additional radius of gyration potential.\\
         \item[d] Structures with the lowest energy did not correspond to the native structure in this run.\\
         \item[e] This run was carried out using TorusDBN-CS trained using only high-quality X-ray structures.
     \end{tablenotes}
@@ -87,8 +91,10 @@ PHAISTOS input to reproduce these folding simulation is given below.
 \end{lstlisting}
 
 This simulation took two days, with a total of 2 out of 12 threads successfully identifying the native structure as having the lowest energy.
-This simulation yielded a lowest energy structure a 2.76 \AA~CA-RMSD from the X-ray structure, and a lowest RMSD structure at 1.11 \AA. Later, this lowest energy sample was further refined by Lars Bratholm to a CA-RMSD of only 1.1 \AA using an additional multibody-multinomial poteintial of mean force in the simulation\cite{mumu}, a procedure which took 24 hours on 8 cores.
-In conclusion, the data for CI-2 was recorded in merely, 11 hours via fully automated process. A structure comparable to conventional NMR structures could then be determined after 36 hours. After an additional24 hours, a structure that rivals X-ray structures was further determined by Lars Bratholm.
+This simulation yielded a lowest energy structure a 2.76 \AA~CA-RMSD from the X-ray structure, and a lowest RMSD structure at 1.11 \AA. Later, this lowest energy sample was further refined by Lars Bratholm to a CA-RMSD of only 1.1 \AA~using an additional multibody-multinomial potential of mean force in the energy function \cite{mumu}. This refinement simulation took 24 hours on 8 cores.
+This structure is displayed in Fig.~\ref{fig:ci2_lars}.
+
+In conclusion, the data for CI-2 was recorded in merely 11 hours via a fully automated process. A structure comparable to conventional NMR structures could then be determined after 36 hours. After an additional 24 hours, a structure that rivals X-ray structures was further determined by Lars Bratholm.
 
 \begin{figure}%
     \centering
@@ -105,8 +111,14 @@ In conclusion, the data for CI-2 was recorded in merely, 11 hours via fully auto
     \label{fig:ci2}%
 \end{figure}
 
+\begin{figure}%
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/ci2_pymol/ci2_lars.pdf}
+    \caption{The CI-2 structure refined to 1.1 \AA~by Lars Bratholm. The refinement was carried out by including a multibody-multinomial poteintial of mean force in the simulation.}
+    \label{fig:ci2_lars}%
+\end{figure}
 
-
+\clearpage
 \section{Folding of small proteins (\textless 100 AA)}
 
 A test set of 5 small proteins were folded using the code. The results are summarized in table \ref{tab:folding_small}. The test set is a diverse set of structures with different contents of alpha-helix and beta-sheet conformations. 
@@ -144,7 +156,7 @@ In the Ubiquitin simulations, the lowest energy conformations were not in except
  Again, this must be attributed to lack of "funneling" of the energy landscape around the native state, since sampling evidently is performed close to this state.
 
 Collectively, these result show, that sampling from TorusDBN-CS in PHAISTOS is indeed very efficient, but better energy functions are required in some cases. In one case, the CamShift energy term had a lower energy by 6 kcal/mol for a misfold, than for a sample close to the native state.
-Another option would be using a better molecular mechanics force-field. PHAISTOS already supports the OPLS-AA/L but this would increase simulation times by more than one order of magnitude, and would be unacceptable for simulations on larger structures.
+Another option would be using a better molecular mechanics force-field. PHAISTOS already supports the OPLS-AA/L but using this would increase simulation times by more than one order of magnitude, and would be unacceptable for simulations on larger structures.
 
 \begin{figure}
     \centering
@@ -171,9 +183,9 @@ Another option would be using a better molecular mechanics force-field. PHAISTOS
 \section{Folding of larger proteins (\textgreater 100 AA)}
 
 This section presents folding results on a set of larger proteins (\textgreater 100 AA) with known structures.
-It is worth to note, that using sparse NMR data, only three structures \textgreater 200 residues have been determined: Alg13 (201 AA), Rhodopsin (225 AA) and MBP (376 AA) using the ROSETTA program with the "resolution-adapted structural recombination" (RASREC) protocol\cite{Lange2012,LangePNAS2012}.
+It is worth to note, that using sparse NMR data, only three structures \textgreater 200 residues have been determined: Alg13 (201 AA), Rhodopsin (225 AA) and MBP (376 AA) using the ROSETTA program with the "resolution-adapted structural recombination" (RASREC) protocol \cite{Lange2012,LangePNAS2012}.
 
-Alg13 was solved using backbone chemical shifts, and only 52 NOE restraints, to an CA-RMSD of 4 \AA~to the experimental NMR structure (2jzc).
+Alg13 was solved using backbone chemical shifts, and only 52 NOE restraints, to an CA-RMSD of 4 \AA~to the experimental NMR structure.
 Rhodopsin was folded to an CA-RMSD of 1.9 \AA~to the X-ray structure using 215 NOE restraints, backbone chemical shifts chemical shifts and RDCs.
 The MBP protein is a two-domain protein of 376 residues.
 MBP was folded to an RMSD of 3.6 \AA~using 1235 NOE restraints, backbone chemical shifts chemical shifts and RDCs.
@@ -182,7 +194,7 @@ An attempt to use only automatically assigned NOEs yielded 455 restraints, which
 The N-terminal domain was converged to 2.7 \AA, but the C-terminal domain and the angle between the two domains was incorrectly folded.
 
 Langer \textit{et al.} have demonstrated that by using a special side-chain labeling scheme a few NOE restraints (around 150-250) can be automatically assigned, and these are generally enough to fold the structures using a ROSETTA protocol\cite{LangePNAS2012}.
-The scheme is a "ILV-labeling" scheme, where the methyl groups of isoleucine, leucine and valine side-chains are selectively labeled with $^{13}$C and $^1$H isotopes. These groups are commonly found in the core region of the protein and these methyl groups will generally be in contact with each other, thus being able to provide valuable NOE distance restraints.
+The scheme is a "ILV-labeling" scheme, where the methyl groups of isoleucine, leucine and valine side-chains are selectively labeled with $^{13}$C and $^1$H isotopes. These groups are commonly found in the core region of the protein and these methyl groups will generally be in contact with each other, thus being able to provide valuable NOE distance restraints. This corresponds to only assigning 10-20\% of the full spectrum.
 
 From the structures in the study by Langer \textit{et al.}, only five structures consist of one chain only, and only those could be simulated in PHAISTOS.
 These five structures were selected into the test-set used here, and additionally Prolactin and the Top7 proteins were added.
@@ -222,13 +234,13 @@ MBP                 & 376      & a/b    & 1EZ9    & 6807      & All         &  1
 
 
 The folding simulation settings were similar to those used to fold small proteins, with the exception that the CamShift energy term was too slow to be used in practice.
-The additional NOE distance restraint term used a flat-bottom potential with a width of 4 \AA around the equilibrium distance, and a quadratic potential outside this range.
+The additional NOE distance restraint term used a flat-bottom potential with a width of 4 \AA~around the equilibrium distance, and a quadratic potential outside this range.
 This was done using the existing NMR inference module in PHAISTOS.
 
 However, using this potential turned out to be quite problematic. 
 Once a distance restraint was fulfilled, the simulation would in most cases never break the contact again.
 Consequently, an empirical factor of 1/128 was multiplied onto the NOE energy.
-This factor was determined by running simulations on the Top7 structure with weights from $2^1$ to $2^{10}$
+This factor was determined by running simulations on the Top7 structure with weights from $1/2^1$ to $1/2^{10}$
 Unfortunatly, due to this problem, no good structures for MSRB, WR73, HR4660B and MBP could be located. 
 After a few 1,000,000 steps the structures located local minima which fulfilled a number of distance restraints, but it was impossible to escape these minima.
 The Top7 structure folded to an RMSD of 2.1 \AA.
@@ -280,7 +292,7 @@ Fig.~\ref{fig:rhodopsin} shows the resulting structures and energy/RMSD landscap
 The final RMSD after refinement was 2.5 \AA~for Rhodopsin, compared to 7.8 \AA~before refinement.
 For Prolactin, the same numbers were 3.5 \AA~and 8.5 \AA, respectively.
 The reason for the higher RMSD for Prolactin, compared to Rhodopsin is a flexible handle with no NOE restraints.
-The structure of this handle is thus determined by the PROFASI force field and TorusDBN-CS, which apparently does not agree well with the experimental structure in this case - this can be seen from Fig.~\ref{fig:rhodopsin}.
+The structure of this handle is thus determined by the PROFASI force field and TorusDBN-CS, which apparently does not agree well with the experimental structure in this case - this can be seen from Fig.~\ref{fig:prolactin}.
 \\\\The command line to run the refinement is given below:
 \begin{lstlisting}
 ./phaistos --pdb-file rhodopsin_lowest_energy1.pdb \
@@ -372,7 +384,7 @@ This way, pair of residues which are probable to be close in 3D space can be ide
 The procedure is briefly summarized in Fig.~\ref{fig:evo_constraint}, and is implemented in the EVfold program.
 
 In this proof-of-concept study, 270 contacts were obtained a multiple-sequence alignment using the EVfold program (Wouter Boomsma, personal communications) for the 269 residue protein Savinase.
-The restraints were simply treated as NOE restraints using old NOE code mentioned in the previous section.
+The restraints were simply treated as NOE restraints using the old NOE code mentioned in the previous section.
 A similar simulation to that which folded Rhodopsin was adopted. 
 In terms of computational resources, these were increased to 100 threads and $75 \times 10^6$ iterations, compared to only 72 threads and $50 \times 10^6$ iterations for the Rhodopsin simulation.
 One thread identified a native-like structure.
@@ -382,7 +394,7 @@ The structure and an energy/RMSD plot for the refinement is shown in Fig.~\ref{f
 
 \begin{figure}
     \includegraphics[width=0.85\textwidth]{figures/evo_constraint.pdf}
-    \caption{Evolutionary constraints}
+    \caption{Brief overview of the process from which evolutionary constraints are inferred. Correlated sequence variation that retains favorable interactions is identified and converted to distance constraints. Figure from Marks et al., 2011.}
     \label{fig:evo_constraint}
 \end{figure}
 
