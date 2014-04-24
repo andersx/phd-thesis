@@ -1,7 +1,7 @@
 \chapter{Determined protein structures}
 \label{chapter:results}
 This section describes all test-targets which I have attempted to fold using the methodologies presented in the previous chapters.
-All protein structures, chemical shift and NOE data used in this thesis is available from \url{https://github.com/andersx/cs-proteins}.
+All protein structures, chemical shift and NOE data used in this thesis is available from \url{https://github.com/andersx/cs-proteins/}.
 
 
 \section{Barley Chymotrypsin Inhibitor II}
@@ -18,7 +18,7 @@ As we demonstrate, a structure could be determined computationally from these ch
 \subsection{Computational methodology}
 Several folding protocols were tried for this protein. All runs were performed as 72 independent trajectories which ran for 50 mio MC steps (iterations).
 Sampling was carried out using either TorusDBN or TorusDBN-CS to bias the backbone moves and the PROFASI force field was used in all simulations.
-One simulations used an experimental version of TorusDBN-CS, supplied by Lars Bratholm, which was trained on only high-resolution X-ray structures (available from \url{https://github.com/andersx/cs-proteins}).
+One simulations used an experimental version of TorusDBN-CS, supplied by Lars Bratholm, which was trained on only high-resolution X-ray structures (available from \url{https://github.com/andersx/cs-proteins/}).
 Three simulations used an energy function based on CamShift using a cauchy distribution with variable $\gamma$-weight as energy function.
 Additionally, three simulations used a potential on the radius of gyration to restrict the sampling to only compact structures \cite{Phaistos_oldest}.
 Sampling was performed in the multicanonical ensemble with a thermodynamic beta-range from 0.6 to 1.1, corresponding to a temperature range of 272K to 500K. The MC move set was comprised of 40\% CRISP moves, 10\% pivot moves and 50\% uniform side chain moves.
@@ -138,7 +138,7 @@ Ubiquitin           & 76       & a/b & 1UBI    & 17769     & 1-70          & 3.8
 CI-2                & 63       & a/b & 1YPA    & N/A\tnote{a}& 4-34,43-63  & 2.6\tnote{b}
     \end{tabular}
     \begin{tablenotes}
-    \item[a] Using automatically assigned data obtained from Kaare Theilum (personal communication - see \url{https://github.com/andersx/cs-proteins}).
+    \item[a] Using automatically assigned data obtained from Kaare Theilum (personal communication -- see \url{https://github.com/andersx/cs-proteins/}).
     \item[b] The number reported is discussed in section \ref{sec:ci2_results}.
     \end{tablenotes}
     \end{threeparttable}
